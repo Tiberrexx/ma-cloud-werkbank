@@ -694,3 +694,66 @@ Sieben Prüfagenten mit getrennten Blickwinkeln (Schreibregeln in drei Abschnitt
 - quellen-2, 1920 (Belsley-DOI): bereits in Teil 1 umgesetzt (Z. 1926: „laut Prüflauf Wiley-Series-Nachdruck 2004“).
 - stichprobe, 1062 (Entwurfsreste): bereits in Teil 1 umgesetzt (Z. 1067 nennt ch3 Z. 764–775).
 - stichprobe, 1334 (eq.Tout.stat): bereits in Teil 1 umgesetzt (Z. 1339 nennt Gl. eq.grundlagen.basic.stufen, die einstufige Form nur als Ersatzform).
+
+## Nachtrag: Korrekturen aus Lauf 1 nach der Zusammenführung (Commit 9390bfd)
+
+- Anlass: Die Sitzung von Lauf 1 hat nach dem Schnappschuss für die Zusammenführung einen eigenen adversarialen Prüfdurchlauf gepusht (Commit 9390bfd, „Korrekturen aus adversarialem Prüfdurchlauf eingearbeitet“, 184 Zeilen neu, 133 entfernt). Damit nichts verloren geht, ist jede dieser Korrekturen einzeln gegen die Gesamtdatei abgeglichen.
+- Vorgehen: Wortdiff 653ece4 → 9390bfd in 51 Punkte K01–K51 zerlegt; sechs Prüfer (je Abschnitt einer) haben jeden Punkt an den genannten Zeilen in `kontext/ch2.tex` bzw. `ch3.tex` nachgelesen und in der ganzen Gesamtdatei gesucht. Status: abgedeckt (schon inhaltlich drin), teilweise (Kern drin, Detail fehlt oder eine von L1 zurückgenommene Aussage stand noch drin), fehlt, verworfen (L1-Korrektur sachlich falsch; kam nicht vor).
+- Umsetzung: 88 Edit-Vorschläge, zwei davon für dieselbe Stelle (Modussprung in F4 und in Idee A13) zusammengelegt, 86 angewendet. Neue oder geänderte Stellen tragen die Marke „(L1-Korrektur)“.
+- Zurückgenommene Aussagen, die jetzt überall ersetzt sind: „Dieselbetrieb ist Sättigung, kein zweites Reglergesetz“ (jetzt: eigene Betriebsart, formal Regler `F = 0`, Ljung-Argument mit Einschränkungen haltbar); „Sparsifizierung ersetzt die Trunkierung“ (jetzt: Regression ersetzt die Projektion, die Trunkierung ist die Wahl eines Zustands); „Pkw“ bei Vagapov 2024 (jetzt Nutzfahrzeug nach Titel der Diss.); „Wandtemperatur-Dynamik beeinflusst die Güte“ bei Zhang u. a. 2022; „Datenherkunft widersprüchlich“ bei Ou u. a. 2024 (jetzt CFD laut Abstract, S); `a ∈ (0,1)` als Stabilitätsbedingung (jetzt `|a| < 1`, `(0,1)` nur Plausibilität).
+- BibTeX (`quellen_E.bib`, jetzt 197 Einträge): Entwurf `ouSparseIdentificationModeling2024` entfernt (Autoren und Jahr nur S, jetzt Kandidat ohne Key); bei `valabekDeepKoopmanEconomic2025` das Autorenfeld in einen `% ungeprüft:`-Kommentar verschoben (L1: nur S; L2 hat dieselben Namen nur einmal gesehen, †); bei `saltelliGlobalSensitivityAnalysis2008` Hinweis, dass das Key-Jahr ungeprüft ist. Kaleli 2020 bleibt, weil der L2-Prüflauf den Eintrag geprüft hat (Nr. 160, korrigiert). Zhang u. a. 2022 und Beran u. a. 2021 standen schon mit geprüften Metadaten aus dem L2-Prüflauf in der Datei.
+- `ideen_E3.csv` unverändert: In E3.2 hat sich nur eine Anmerkungszeile unter der Tabelle geändert, keine Tabellenzeile.
+
+| Nr. | L1-Stelle | Inhalt (Kurzform) | Status | Umsetzung |
+|---|---|---|---|---|
+| K01 | L1 1.4 | Stelle ARX ch3 Z. 155–195, NARX Z. 197–205 ergänzt. | abgedeckt | kein Edit |
+| K02 | L1 2.3 | Grundlagenlücken präzisiert: Diskretisierung nur als Halbsatz (ch2 Z. 1089–1091); Totzeit nur physikalisch (ch2 Z. … | abgedeckt | kein Edit |
+| K03 | L1 2.4 | SINDy-Solver: STLSQ, LASSO, Elastic Net stehen da (ch3 Z. 421–430); SR3 und Ungleichungsnebenbedingungen (Vorzeichen) … | teilweise | 2 Edits |
+| K04 | L1 2.5 | POD-Galerkin: Galerkin nur für EDMD (ch3 Z. 303–307), Loiseau nur als Bibliotheksempfehlung (ch3 Z. 444–447). | teilweise | 1 Edit |
+| K05 | L1 3.3 | „ändert nichts an den Limitierungen der linearen Modellklasse“ (ch3 Z. 201–205): SINDy nur in den Parametern linear, in … | teilweise | 2 Edits |
+| K07 | L1 3.5 | Modell aus Modell „kann Güte der Quelle nicht übertreffen“ ch3 Z. 1141–1146; Z. 1141–1144 nennt Yahagi u. a. 2026 als … | abgedeckt | kein Edit |
+| K08 | L1 3.6, neu | Kreuzterm im geschlossenen Kreis nicht unbedingt ≠ 0 (ch3 Z. 822–823, 838–840, 891–893): bei weißem Gleichungsfehler … | teilweise | 3 Edits |
+| K06 | L1 alt 3.4 → neu 7.3 | LASSO-Zielfunktion ch3 Z. 427 mit ‖·‖₂², Bildunterschrift Z. 496–498 mit ‖·‖₂ (formal Square-Root-LASSO, anderer … | teilweise | 1 Edit |
+| K09 | L1 4.1 | Modussprung (ch3 Z. 869–873, Ljung Abschn. 13.4): Ljung-Argument formal haltbar: fester Stellwert im Dieselbetrieb (ch2 … | teilweise | 10 Edits |
+| K10 | L1 4.3 | Zentrierung (ch3 Z. 126–141): Spaltenzentrierung von Θ (Z. 130–137) ändert bei vorhandener, nicht bestrafter Konstante … | teilweise | 2 Edits |
+| K11 | L1 5.1 | Doppelungen präzisiert: `eq.grundlagen.basic.stufen` ↔ unnummerierte Zweistufenform ch2 Z. 573–577 (und Z. 551–556); … | teilweise | 1 Edit |
+| K12 | L1 5.3 | Biasgleichung gilt für jedes parameterlineare Modell, mit Korrektur K08. Aussage zur Schwellwertauswahl steht bereits … | teilweise | 1 Edit |
+| K13 | L1 5.6 | „analoge Sensitivität ist für SINDy zu erwarten“ (ch3 Z. 625–628) von Korrektheit nach Durchdringung verschoben (nur … | teilweise | 1 Edit |
+| K14 | L1 6.2 | Deutung als quasi-LPV-Modell (T_col,in, T_LTCW, ṁ_rel gehen schwach mit dem Hub mit, ch2 Z. 517–519, 775–780), Stelle … | teilweise | 3 Edits |
+| K15 | L1 6.3 | Verschiebungsinvarianz: ch2 Z. 392–396 (Differenzen); in ch3 fehlt die Aussage. Exakt nur mit festgehaltenem ṁ_rel oder … | teilweise | 1 Edit |
+| K16 | L1 7.1 | Rohentwurf ch3 Z. 761–777 (Z. 764–772 Tippfehler); Z. 761–774 (auskommentierte Überschrift und Rohentwurf) entfernen; … | abgedeckt | kein Edit |
+| K17 | L1 7.2 | ch3 Z. 218–222: Satzfragment in Z. 218 doppelt zu Z. 220–222; Fragment „Der Koopman-Operator wirkt linear auf einen … | abgedeckt | kein Edit |
+| K18 | L1 7.3 | „Esemble“ in ch3 Z. 506 Überschrift; Z. 552 nur Dateiname (optional, nur mit Umbenennung der Bilddatei); `\textbf` Z. … | abgedeckt | kein Edit |
+| K19 | L1 7.6 | λ dreifach belegt: ch2 Z. 438, 1068; ch3 Z. 423, 428, 498. | abgedeckt | kein Edit |
+| K20 | L1 F1 POD-Galerkin | Ein-Moden-Galerkin mit konstanter Ansatzfunktion ergibt eine Mitteltemperatur; T_eng,in als Zustand setzt … | teilweise | 2 Edits |
+| K21 | L1 F3 NARX | Gemeinsam: Schätzung auf dem Einschrittfehler wie beim klassischen NARX (OLS/ERR); Unterschied nur zu … | teilweise | 1 Edit |
+| K22 | L1 F4 CL-Verzerrung | Direkte Methode konsistent, wenn das Störmodell stimmt (weißer Gleichungsfehler), der Kreis eine Verzögerung enthält … | teilweise | 4 Edits |
+| K23 | L1 F6 QP-Tauglichkeit | Affin in Zustand und g(u_HP) bei gegebenem Verlauf der Betriebsgrößen; QP nur mit linearem g oder v=g(u_HP) als … | teilweise | 2 Edits |
+| K24 | L1 F7 Stabilität | Modell: skalar /a(ṁ_rel)/<1 für alle Betriebspunkte reicht; a∈(0,1) zusätzlich als Plausibilität, schließt Oszillation … | teilweise | 1 Edit |
+| K25 | L1 Beitrag 1 = BT1 | „affin in Zustand und in g(u_HP) … unter angebbaren Bedingungen in einen linearen QP-MPC“. Bedingung: g linear oder … | teilweise | 3 Edits |
+| K26 | L1 Beitrag 2 = BT3 Messdaten | Lücke: an Ladeluftkühler bzw. Ladelufttemperatur keine SINDy-/Koopman-Arbeit mit Messdaten; am Motorluftpfad mit … | teilweise | 2 Edits |
+| K27 | L1 Beitrag 3 = BT4 Bewertung | Identifikation für die Regelung ist allgemein etabliert (Auftrag D, Frage 5); eine SINDy-/Koopman-Arbeit mit … | teilweise | 4 Edits |
+| K28 | L1 Beitrag 5 = BT6 Invarianz | „Die Differenzbibliothek dieser Arbeit erzwingt Verschiebungsinvarianz der Prognose, solange die Betriebspunktfaktoren … | teilweise | 2 Edits |
+| K29 | Verwandte, Kopf | Inhalte aus Suchzusammenfassungen (S) oder GitHub-Dateien (G), kein Volltext; „laut Abstract … (S)“ heißt … | teilweise | 1 Edit |
+| K30 |  | Vagapov 2024 Diss.: Nutzfahrzeug (Titel der Diss. „Modellierung, Identifikation und modellbasierte Regelung des … | teilweise | 4 Edits |
+| K31 |  | Zinage u. a. 2022: laut Abstract EDMD besser als NARX (G); für die Austrittstemperatur bei hoher Turbinendrehzahl NARX … | teilweise | 1 Edit |
+| K32 |  | Kaleli 2020 und Ou 2024 in L1 jetzt „Kandidat“ (kein BibTeX-Entwurf, Autoren und Jahr nur S). | teilweise | 2 Edits |
+| K33 |  | Zhang u. a. 2022: transiente thermische Motordynamik beeinflusst die Saugrohrdruck-Antwort, MPC laut Abstract robust … | teilweise | 1 Edit |
+| K34 |  | Ou u. a. 2024: Daten laut Abstract aus CFD-Modell (Ansys Fluent), Messdaten nicht erwähnt (S); ersetzt „Datenherkunft … | teilweise | 2 Edits |
+| K35 | L1 Idee 1 QP-Tabelle = S2 | Spalten: Terme Zustand×Zustand, Ventil×Zustand, g(u_HP) linear oder monoton invertierbar, Scheduling-Größen eingefroren … | teilweise | 2 Edits |
+| K36 | L1 Idee 2 Invarianztest = A18 | ṁ_rel dabei festhalten; Absolutterm-Modelle bestehen nur bei Verstärkungssumme 1; Abweichung davon berichten (statt … | abgedeckt | kein Edit |
+| K37 | L1 Idee 4 Residuentests = A3 | Weißheitstest auf Einschritt-Residuen bzw. Residuen eines Modells mit Störmodell; Kreuzkorrelationstest Residuum–u_HP … | teilweise | 5 Edits |
+| K38 | L1 Idee 7 Stabilität | a(ṁ_rel) in (0,1) nur Plausibilität, Stabilität schon bei /a/<1; eingefrorene Eigenwerte bei mehreren Zuständen nicht … | teilweise | 1 Edit |
+| K39 | L1 Idee 11 Rechenzeit | gegen den MPC-Takt aus Abschnitt `sec.methodik.mpc` (zum Vergleich Serienregler 500 ms, ch2 Z. 275), nicht gegen … | teilweise | 2 Edits |
+| K40 | L1 Idee 12 Hyperparameter | Anker Cawley & Talbot 2010, Varma & Simon 2006 (Auftrag D, Frage 6). | abgedeckt | kein Edit |
+| K41 | L1 Idee 13 Ersatzschaltbild = B8 | zu Gl. `eq.energiebilanz.dyn`: C_eff als Kapazität am Knoten T_eng,in, Leitwert ṁ_L c_p,L von Quelle T_col,in, Leitwert … | abgedeckt | kein Edit |
+| K42 | L1 Ideen 19/20 | Anker Beobachter: `muskeDisturbanceModelingOffsetfree2002`, `pannocchiaDisturbanceModelsOffsetfree2003` (Bib); … | abgedeckt | kein Edit |
+| K43 | L1 große Ideen | Anker ergänzt: Online-Nachführung `bhadrirajuOASISPOperableAdaptive2021` (Bib), Quade u. a. 2018; MIMO mit LP-Ventil … | teilweise | 4 Edits |
+| K44 | L1 Methodenanker | Statusspalte [nur bibliografisch] je Anker; Nutzenangaben als „(eigene Einschätzung)“ bzw. „(S)“ gekennzeichnet; Raue … | teilweise | 3 Edits |
+| K45 | BibTeX Saltelli | Key-Jahr 2008 ungeprüft; Erscheinen Dez. 2007 laut Suchzusammenfassung (S); Key erst in Zotero nach Festlegen des … | teilweise | 3 Edits |
+| K46 | BibTeX Valábek | Autorenfeld nur (S) → aus dem Eintrag in Kommentar verschoben; Nachname im Key damit ebenfalls nur (S). | teilweise | 4 Edits |
+| K47 | BibTeX Zhang 2022 | Autoren (S) s. K33; ACC 2022 (T). | teilweise | 3 Edits |
+| K48 | BibTeX Kaleli, Ou | Entwürfe entfernt, Kandidaten ohne Key (Autoren und Jahr nur S). Kaleli ist aber im L2-Prüflauf (Nr. 160, korrigiert) … | teilweise | 4 Edits |
+| K49 | BibTeX Beran | schon in der Bib (`beranModelbasedApproachControl2021`, ch3 Z. 976); nur DOI 10.1007/s41104-021-00087-0 (T) gegen … | teilweise | 3 Edits |
+| K50 | Offen | neue Punkte: Valábek-Autoren nur S; Kandidaten Kaleli/Ou mit Angaben; Beran-DOI abgleichen; Vagapov-Titel/URL für … | teilweise | 5 Edits |
+| K51 | Anhang E | „Rechercheagent“ → „Copilot“ (in L1; in der Gesamtdatei nur prüfen, ob „Rechercheagent“ vorkommt und ob das zu ändern … | fehlt | 1 Edit |
