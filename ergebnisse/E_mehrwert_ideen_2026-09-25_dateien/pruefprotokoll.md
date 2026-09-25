@@ -757,3 +757,35 @@ Sieben Prüfagenten mit getrennten Blickwinkeln (Schreibregeln in drei Abschnitt
 | K49 | BibTeX Beran | schon in der Bib (`beranModelbasedApproachControl2021`, ch3 Z. 976); nur DOI 10.1007/s41104-021-00087-0 (T) gegen … | teilweise | 3 Edits |
 | K50 | Offen | neue Punkte: Valábek-Autoren nur S; Kandidaten Kaleli/Ou mit Angaben; Beran-DOI abgleichen; Vagapov-Titel/URL für … | teilweise | 5 Edits |
 | K51 | Anhang E | „Rechercheagent“ → „Copilot“ (in L1; in der Gesamtdatei nur prüfen, ob „Rechercheagent“ vorkommt und ob das zu ändern … | fehlt | 1 Edit |
+
+### Gegenprüfung des Nachtrags
+
+- Drei skeptische Prüfer (E1; E2; E3, E4, Quellen, Offen) haben jede eingearbeitete Änderung an `kontext/`, an den Schreib- und Quellenregeln und am Rest der Datei zu widerlegen versucht: 75 Änderungsblöcke geprüft, 17 beanstandet; dazu Stellen außerhalb der Blöcke, die durch die Korrekturen widersprüchlich geworden waren.
+- Algebra bestätigt: Frisch-Waugh-Lovell bei Zentrierung mit unbestrafter Konstante; `E{φ v} = 0` bei weißem `v` und Verzug im Kreis; `|a| < 1` als Stabilitätsbedingung des skalaren Modells; `v = g(\valveCA)` als Entscheidungsvariable; Verschiebungsinvarianz exakt nur mit festem \mrel oder `q_rel`.
+- 26 Fixes angewendet:
+  - E1: „(DoE)“ ist ein Zusatz der Zusammenführung zu L1 K12 („Prüfstands- gegen Regelkreisdaten“) und widerspricht der per L1-Korrektur festgelegten Validierungsrolle der DoE-Daten (K4 Z. 230, F4 Z. 519, BT2 „DoE zurückhalten“).
+  - E1: „deshalb“ hängt am vorhergehenden Satz („sonst bilinear“) statt an der Begründung: Das Scheduling geht schwach mit dem Hub mit.
+  - E1: Das Gegenmittel (Schätzung auf unabhängig angeregten Daten, Validierung auf geregelten) und das Bewertungsschema (DoE zur Validierung) stehen unmarkiert gegeneinander; in K4 Z. 230 ist derselbe Konflikt mit „aber“ gekennzeichnet.
+  - E1: Beides sind hinreichende, keine notwendigen Bedingungen. Das macht die Stelle konsistent mit E3 S5 („nachweisen“).
+  - E1: Subjekt verrutscht: Nicht die Lags „gelten“, sondern der Test auf diesen Lags trägt nur bei weißen Residuen (K37).
+  - E1: Außerhalb der Hunks (F4, Stichpunkt Literaturlage): Nach der L1-Korrektur zur DoE-Validierung darf das Schema „Fit auf Open-Loop-Daten“ nicht mehr als feststehende Wahl der Arbeit gelten.
+  - E1: Außerhalb der Hunks (K3 Kurzbefund ch3 Z. 1149–1152): K30 präzisiert Vagapov 2024 auf „Nutzfahrzeug“; E2 Z. 852 und Offen Z. ~1940 sind schon angepasst.
+  - E1: Außerhalb der Hunks (K6, Beitragsliste): Der verwiesene K6-Punkt heißt nach der L1-Korrektur „quasi-LPV-Deutung“.
+  - E1: Außerhalb der Hunks und älter als die L1-Korrektur (E1.2-Tabelle): Die Zeile hat 6 statt 4 |, weil die Betragsstriche als Spaltentrenner zählen. Die Umformulierung ist gleichwertig und ohne |.
+  - E1: Neue Zeile 8: Die Pfadangabe weicht vom Lesehinweis in Z. 10 und von der Dateiliste ab.
+  - E2: Gleiche Einschränkung wie in F6 (Z. 502) und E1.1 K1 (Z. 83). Der übergeordnete L2-Punkt nennt „stückweise linear mit festen Stützstellen“ als eigenen QP-Weg; das widerspricht nach der L1-Korrektur „nur lineares g oder v = g(\valveCA)“ in BT1.
+  - E2: Nach E1.1 K6 (Z. 317) ist bei festem Hub g(\valveCA)·ΔT kollinear mit ΔT. Identifizierbar ist nur a_0 + a_2 g(100 %), der ventilfreie Störpfad a_0 allein nicht.
+  - E2: So lautet K26 bei L1 und die Fassung in E2.3 Zeile 1. Ohne die Einschränkung widerspricht die Stelle Z. 746, wo Rupprecht und Vagapov 2022 mit Messdaten genannt sind.
+  - E2: Direkt nach „Sparsamkeit geht erst verloren …“ liest sich der Satz als Sparsamkeitsverlust reiner Differenzen. Nach der Algebra und nach E1.1 K4 (Z. 265) verschiebt sich nur das Absolutglied.
+  - E2: L1 hat nur Vagapov 2024 („Pkw“ zu „Nutzfahrzeug“) korrigiert. Die Aussage zu Vagapov 2022 ist eine Folgerung der Zusammenführung und braucht die richtige Herkunftsmarke.
+  - E2: „ihn“ hat in der Zelle keinen Bezug (grammatisch „Suchweg“ aus dem Spaltenkopf); gemeint ist der Residuen-Leerbefund.
+  - E2: K50 verlangt diese Suchlücke unter Offen. Die neue Aussage in BT4 (Z. 769) steht bisher weder in „Offen zu E2.1“ noch im Abschnitt „Offen / nicht belegt“.
+  - E3Q: K23/K25 (Δv-Strafe, Schranken in v) fehlen in S2. Ohne diesen Hinweis widerspricht (c) dem Stichpunkt „Nebenbedingungen …, alle linear: |Δu_k| ≤ Δu_max“, weil die Ratenschranke mit v = g(u) nichtlinear wird (E1.1 K1, Z. 84).
+  - E3Q: Nach der L1-Korrektur (K14/K35, Z. 659, 1083, 1974) gehen \Tin, \TLT und \mrel mit dem Hub mit, die Termform ist also quasi-LPV. Die Spaltenzahl der Tabellenzeile bleibt 3.
+  - E3Q: Der Test läuft im selben Stichpunkt auch gegen \Tin, \TLT und \mrel. Laut S2 liegen diese Größen schwach im Kreis. Dann gilt das Rückführungsargument (Ausschlag beim wahren Modell bei farbigen Residuen) auch für sie.
+  - E3Q: Die Aussage steht nicht in L1 und war ohne Marke (Zusammenführung). Sie ist zu schwach: Enthielte der Modellsatz Strecke und H0, wären die Einschrittresiduen asymptotisch weiß. Offen ist nur die Größe der Verzerrung.
+  - E3Q: Widerspruch im Stichpunkt: Das Beispiel „Ventilterm bei schwacher Anregung = praktisch nicht identifizierbar“ ist beim parameterlinearen Modell unmöglich, denn das quadratische Profil schneidet jede Schwelle. Die Ergänzung steht innerhalb der schon markierten …
+  - E3Q: B5 (Z. 1452, außerhalb der Hunks) liest sich mit „Diesel/Sättigung“ noch als Gleichsetzung, die L1 zurückgenommen hat (K09; Nachtrag oben: „überall ersetzt“).
+  - E3Q: `kaleliDevelopmentPredictiveBased2020` steht als Fassung des Prüflaufs in quellen_E.bib; „ohne BibTeX-Entwurf“ gilt nur für L1. Die Zeitschrift von Ou ist laut L1_neu ebenfalls nur (S).
+  - E3Q: Ljung Abschn. 13.4 (Modussprung) steht doppelt in Offen (Z. 1943 und die ausführlichere neue Z. 1975).
+  - E3Q: K50 und der Offen-Abschnitt von L1_neu führen diesen Punkt als neu. In der Gesamtdatei steht er nur in E2 (Z. 770), nicht in „Offen / nicht belegt“.
