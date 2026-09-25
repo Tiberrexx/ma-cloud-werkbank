@@ -1,0 +1,1213 @@
+%%
+%% Kapitel 3 -- Stand der Technik: datengetriebene Systemidentifikation
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Stand der Technik: datengetriebene Systemidentifikation}
+\label{ch.standderTechnik}
+
+Die Modellierung dynamischer Systeme aus Messdaten lässt sich in drei
+Klassen einteilen \cite{isermannAutomotiveControlModeling2022}:
+
+\begin{itemize}
+  \item \textbf{White-Box-Modelle} basieren vollständig auf den
+    Erhaltungsgleichungen für Masse, Energie und Impuls. Vertreter für
+    Verbrennungsmotoren sind Mittelwertmodelle (Mean-Value Engine
+    Models, MVEM) und nulldimensionale Brennraummodelle
+    \cite{guzzellaIntroductionModelingControl2010, chmelaNulldimensionaleModellierung2019}.
+    Ihre Stärke ist die physikalische Interpretierbarkeit und
+    Extrapolierbarkeit; ihre Schwäche der hohe Aufwand für die
+    Parameteridentifikation sowie Modellungenauigkeiten in Komponenten
+    wie Kühlern, die nur eingeschränkt physikalisch parametrisierbar
+    sind \cite{tangAccuracyMeanValue2024}.
+  \item \textbf{Black-Box-Modelle} verwenden ausschließlich
+    Eingangs-Ausgangs-Daten ohne Anspruch auf physikalische
+    Interpretierbarkeit. Klassische Vertreter sind ARX, ARMAX und OE,
+    im nichtlinearen Fall neuronale Netze.
+  \item \textbf{Grey-Box- bzw.\ Hybridmodelle} kombinieren beide
+    Ansätze, indem sie physikalische Modellstrukturen mit
+    datengetriebenen Parametern verbinden
+    \cite{wulffPhysicsinformedRegressionModels2025, ellisMachineLearningEnhanced2021, subramanianWhiteboxMachineLearning2021}.
+    Die in dieser Arbeit eingesetzten Verfahren \sindy{} und \edmd{}
+    \cite{bruntonDiscoveringGoverningEquations2016, williamsDataDrivenApproximation2015}
+    sind hier einzuordnen: Sie werden zwar datengetrieben aus Messdaten
+    geschätzt, liefern aber (anders als ein neuronales Netz) eine
+    explizite Gleichung mit einsehbaren Termen und Koeffizienten. Mit
+    einer physikalisch motivierten Bibliothek
+    (Abschnitt~\ref{ssec.sot.sindy.bib}) werden sie zu vollwertigen
+    Grey-Box-Modellen.
+\end{itemize}
+
+Die vorliegende Arbeit bewegt sich im Black-Box- und Grey-Box-Bereich.
+Formal gehören alle hier betrachteten datengetriebenen Verfahren zum
+\emph{überwachten maschinellen Lernen}: Aus gemessenen Ein- und
+Ausgangsgrößen wird eine Abbildung geschätzt, die den zeitlichen
+Fortgang des Systems vorhersagt. Ihnen ist ein Kern gemeinsam: Sie
+verschieben die gemessene Zeitreihe um einen Schritt (bzw.\ bilden ihre
+Zeitableitung) und bestimmen anschließend diejenigen Koeffizienten, die
+diese zeitliche Veränderung im Sinne kleinster Quadrate am besten
+erklären. 
+
+
+\section{Regression der kleinsten Quadrate}
+\label{sec.sot.lsq}
+
+Vor der getrennten Betrachtung der einzelnen Verfahren lohnt der Blick
+auf ihren gemeinsamen Kern, die Regression. Sie wertet den
+statistischen Zusammenhang zwischen gemessenen Größen aus. 
+Alle in diesem Kapitel diskutierten
+datengetriebenen Methoden bestimmen eine Koeffizientenmatrix
+$\boldsymbol\Xi$, die eine Zielgröße $\mathbf Y$ möglichst gut aus einer
+Matrix von Merkmalen (Features) $\boldsymbol\Theta$ rekonstruiert,
+
+\begin{equation}
+  \label{eq.lsq}
+  \mathbf Y \;=\; \boldsymbol\Theta\,\boldsymbol\Xi + \mathbf E,
+  \qquad
+  \hat{\boldsymbol\Xi} \;=\; \argmin_{\boldsymbol\Xi}\,
+  \bigl\lVert \mathbf Y - \boldsymbol\Theta\,\boldsymbol\Xi \bigr\rVert_2^2 .
+\end{equation}
+
+
+Bei vollem Spaltenrang von $\boldsymbol\Theta$ hat
+(\ref{eq.lsq}) die geschlossene Lösung
+$\hat{\boldsymbol\Xi} = \boldsymbol\Theta^{+}\mathbf Y$ mit der
+Moore-Penrose-Pseudoinversen
+$\boldsymbol\Theta^{+} =
+(\boldsymbol\Theta^{\!\top}\boldsymbol\Theta)^{-1}\boldsymbol\Theta^{\!\top}$.
+Geometrisch ist die kleinste-Quadrate-Schätzung
+$\hat{\mathbf Y} = \boldsymbol\Theta\hat{\boldsymbol\Xi}$ die
+Orthogonalprojektion von $\mathbf Y$ auf den von den Spalten von
+$\boldsymbol\Theta$ aufgespannten Unterraum; das Residuum
+$\mathbf E = \mathbf Y - \hat{\mathbf Y}$ steht senkrecht darauf
+(Bild~\ref{fig.lsq}).
+
+\begin{figure}[bht]
+  \centering
+  \includegraphics[width=.62\textwidth]{lsq_projektion}
+  \caption{Kleinste-Quadrate-Schätzung als Orthogonalprojektion. Die
+    Spalten der Merkmalsmatrix $\boldsymbol\Theta$ (angedeutet durch
+    $\boldsymbol\theta_1,\boldsymbol\theta_2$) spannen einen Unterraum
+    auf. Die Schätzung $\hat{\mathbf y}=\boldsymbol\Theta\hat{\boldsymbol\Xi}$
+    ist die orthogonale Projektion der Messung $\mathbf y$ in diesen
+    Unterraum, das Residuum $\mathbf e = \mathbf y-\hat{\mathbf y}$ steht
+    senkrecht darauf. Alle datengetriebenen Verfahren dieses Kapitels
+    instanziieren dieses Grundbild mit unterschiedlichem
+    $\boldsymbol\Theta$.}
+  \label{fig.lsq}
+\end{figure}
+
+Alle folgenden Verfahren basieren auf dieser Regression der kleinsten Quadrate. Sie unterscheiden sich allein darin, was als
+Merkmal in die Regression eingeht, welche Größe vorhergesagt wird
+und \emph{ob} die Lösung dünn besetzt erzwungen wird.
+
+%%Kollinearität
+
+Aus (\ref{eq.lsq}) folgen zugleich die Grenzen des Ansatzes. Sind Spalten
+von $\boldsymbol\Theta$ linear voneinander abhängig oder nahezu abhängig,
+ist $\boldsymbol\Theta^{\!\top}\boldsymbol\Theta$ schlecht konditioniert.
+Eine Lösung liefert die Pseudoinverse weiterhin. Deren Koeffizienten
+reagieren jedoch empfindlich auf kleine Änderungen der Daten, verteilen den
+Beitrag zweier ähnlicher Spalten willkürlich und nehmen dabei auch falsche
+Vorzeichen an. Das Residuum bleibt klein, die physikalische Lesart der
+Gleichung geht verloren. Als Maß dieser Multikollinearität dient der
+Varianzinflationsfaktor (VIF) der einzelnen Spalte. Breite Bibliotheken aus
+Polynom- und Kreuztermen verschärfen den Effekt, weil die Spaltenzahl mit
+dem Polynomgrad und der Zahl der Zustände kombinatorisch wächst. Zwei
+Gegenmittel greifen unmittelbar in die Minimierung nach (\ref{eq.lsq}) ein:
+Die Ridge-Regression bestraft die quadrierte Koeffizientennorm und
+stabilisiert die Inversion, die Lasso-Regression bestraft die Betragsnorm
+und drängt schwache Terme auf null. Beide Wege kehren in den Verfahren
+dieses Kapitels als Regularisierung und als Schwellenwertauswahl wieder
+(Abschnitt~\ref{ssec.sot.sindy.robust}).
+
+%%Normierung
+
+Zwei weitere Grenzen liegen in den Daten und nicht im Schätzer. Die Spalten
+von $\boldsymbol\Theta$ tragen verschiedene Einheiten und Größenordnungen.
+Ohne Zentrierung und Normierung bestimmen die betragsgroßen Spalten die
+Lösung, und die Beiträge kleiner physikalischer Größen fallen aus der
+Auswahl. Abhilfe schafft eine Spaltennormierung. Bei der Z-Normierung
+wird jede Spalte um ihren Mittelwert zentriert und durch ihre empirische
+Standardabweichung geteilt,
+$\tilde{\boldsymbol\theta}_j = (\boldsymbol\theta_j - \mu_j)/\sigma_j$.
+Für Regressionsbibliotheken ist die reine Skalierung ohne Zentrierung
+üblich, weil die Zentrierung an der konstanten Spalte scheitert
+($\sigma_j = 0$) und nach der Rückrechnung einen zusätzlichen
+Konstantterm erzeugt. Geschätzt wird auf den normierten Spalten,
+anschließend werden die Koeffizienten in die ursprünglichen Einheiten
+zurückgerechnet. Für schwellwertbasierte Auswahlverfahren ist dieser
+Schritt Voraussetzung, weil ein gemeinsamer Schwellwert vergleichbare
+Größenordnungen aller Spalten verlangt.
+
+Ähnlich wirkt der Abtasttakt. Ist er gegenüber der Prozessdynamik
+zu fein, ändert sich der Zustand zwischen zwei Abtastwerten kaum, die
+numerische Ableitung geht gegen null und die Regression passt sich dem
+Sensorrauschen an. Ist er zu grob, fehlen die schnellen Anteile der Dynamik
+und die geschätzte Ableitung ist verzerrt. Hinzu kommt die Überanpassung,
+denn mit jeder weiteren Spalte sinkt das Residuum $\mathbf E$, ohne dass die
+Prognose auf ungesehenen Daten besser wird. Regressionsmodelle interpolieren
+innerhalb des im Training abgedeckten Betriebsbereichs; außerhalb davon
+verlieren besonders Polynombibliotheken hohen Grades ihre Gültigkeit. Die
+aus der Rückführung stammenden Grenzen sind davon zu trennen.
+
+
+\section{Lineare Zeitreihenmodelle als Baseline: ARX und NARX}
+\label{sec.sot.arx}
+
+Die linearen Polynommodelle bilden den methodischen Anker jeder
+datengetriebenen Modellierung \cite[Kap.~6]{isermannAutomotiveControlModeling2022}.
+Das ARX-Modell
+
+\begin{equation}
+  \label{eq.arx}
+  A(q)\,y(k) \;=\; B(q)\,u(k) + e(k)
+\end{equation}
+
+verknüpft den Ausgang $y(k)$ mit dem Eingang $u(k)$ und dem
+Gleichungsfehler $e(k)$. Darin sind
+$A(q) = 1 + a_1 q^{-1} + \dots + a_{n_a} q^{-n_a}$ und
+$B(q) = q^{-n_k}\bigl(b_1 + b_2 q^{-1} + \dots + b_{n_b} q^{-(n_b-1)}\bigr)$
+Polynome im Rückwärtsverschiebungsoperator $q^{-1}$ mit
+$q^{-1}y(k) = y(k-1)$. Die Ordnungen $n_a$ und $n_b$ legen fest, wie
+viele vergangene Aus- und Eingangswerte eingehen; die Totzeit $n_k$
+gibt an, nach wie vielen Abtastschritten der Eingang zu wirken beginnt. Das Modell
+ist linear in den Parametern und damit die unmittelbarste Instanz von
+(\ref{eq.lsq}): Die Merkmalsmatrix $\boldsymbol\Theta$ enthält die
+verzögerten Aus- und Eingangswerte, die Zielgröße ist $y(k)$. Die
+Schätzung per kleinster Quadrate ist konsistent, sobald der
+Gleichungsfehler $e(k)$ weiß ist, das Störmodell $1/A(q)$ also mit in
+der Modellklasse liegt, und das Eingangssignal $u(k)$ persistente
+Anregung ausreichender Ordnung besitzt
+\cite[Kap.~8--9]{isermannAutomotiveControlModeling2022}. Im
+geschlossenen Kreis ist die erste Bedingung die kritische. ARMAX erweitert (\ref{eq.arx}) um ein
+gleitendes Mittel des Rauschens, OE trennt System- und Rauschmodell
+vollständig.
+
+Die Linearität ist eine harte Annahme. Die in
+Abschnitt~\ref{ssec.grundlagen.luftpfad.kennzahlen} hergeleitete
+Nichtlinearität in $\dot m_L$ und $\TLT$ kann ARX nur lokal abbilden.
+Zudem erzeugt ARX keine interpretierbare Modellgleichung im Sinne
+physikalischer Terme, sondern eine Übertragungsfunktion in
+Verschiebungsoperatoren, deren Koeffizienten den Linearisierungspunkt
+implizit kodieren. Daraus folgt eine schwache Übertragbarkeit zwischen
+Betriebspunkten oder Motoren \cite{atamAdvancedAirPath2018}. Aus diesen
+Gründen dient ARX in dieser Arbeit als Baseline, nicht als Zielmodell.
+
+Als nichtlineare Erweiterung existiert die NARX-/NARMAX-Familie, bei der
+die linearen Polynome durch nichtlineare Funktionen des verzögerten
+Aus- und Eingangs ersetzt werden. \cite{aranDieselEngineAirpath2020}
+verwendet eine MISO-NFIR-Variante für die Diesel-Luftpfad-Identifikation.
+Methodisch lässt sich \sindy{} als sparsifizierte NARX-Variante
+auffassen, in der eine vordefinierte nichtlineare Bibliothek anstelle
+einer freien Funktionsklasse verwendet wird. Diese Lesart ordnet
+\sindy{} in das klassische Identifikationsvokabular ein, ändert aber
+nichts an den oben benannten Limitierungen der linearen Modellklasse.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Dynamic Mode Decomposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Dynamic Mode Decomposition (DMD)}
+\label{sec.sot.edmd}
+
+DMD ist eng mit dem Koopman-Operator verbunden. Der Koopman-Operator wirkt linear auf einen unendlichdimsensionalen Raum
+
+Der Koopman-Operator $\mathcal K$ wirkt linear auf den
+unendlichdimensionalen Raum der Observablen einer dynamischen Abbildung
+\cite{mezicSpectralPropertiesDynamical2005}. Für eine Observable
+$\psi: \mathcal X \to \mathbb C$ und eine diskrete Dynamik
+$\mathbf x_{k+1} = F(\mathbf x_k)$ gilt
+
+\begin{equation}
+  \label{eq.koopman}
+  (\mathcal K \psi)(\mathbf x_k) \;=\; \psi(F(\mathbf x_k)) \;=\; \psi(\mathbf x_{k+1}).
+\end{equation}
+
+Damit wird eine nichtlineare Dynamik im Raum der Observablen global
+linear repräsentiert, um den Preis unendlicher Dimension. Eine
+umfassende moderne Übersicht geben
+\cite{bruntonModernKoopmanTheory2022} und
+\cite{mauroyKoopmanOperatorSystems2020};
+\cite{bruntonModernKoopmanTheory2022} ordnen darin DMD, DMDc, \edmd,
+eDMDc und \sindyc{} als Blöcke ein und derselben datengetriebenen
+Approximation ein. Diese Sicht stützt den roten Faden dieses
+Kapitels.
+
+\cite{kutzDynamicModeDecomposition2016} fassen DMD als
+endlichdimensionale Näherung von $\mathcal K$ auf einem
+$N$-dimensionalen Zustandsraum zusammen; genauer ist DMD die
+datengetriebene Approximation des Koopman-Operators, eingeschränkt auf
+lineare Messfunktionen \cite{bruntonModernKoopmanTheory2022}. Formal
+werden zwei Snapshot-Matrizen
+$\mathbf X_0 = [\mathbf x_1, \dots, \mathbf x_{N-1}]$ und
+$\mathbf X_1 = [\mathbf x_2, \dots, \mathbf x_N]$ gebildet; DMD ist dann
+genau (\ref{eq.lsq}) mit $\boldsymbol\Theta = \mathbf X_0$ und
+$\mathbf Y = \mathbf X_1$:
+
+\begin{equation}
+  \label{eq.dmd}
+  \mathbf A_{\text{DMD}} \;=\; \mathbf X_1\,\mathbf X_0^+.
+\end{equation}
+
+
+
+\subsection{Dynamic Mode Decomposition mit Regeleingängen (DMDc)}
+
+Die Eigenwerte von $\mathbf A_{\text{DMD}}$ liefern die
+DMD-Eigenfrequenzen, die Eigenvektoren die DMD-Moden.
+\cite{proctorDynamicModeDecomposition2016} erweitern DMD um Eingänge zu
+DMDc: Die Merkmalsmatrix wird um den Stelleingang ergänzt,
+$\boldsymbol\Theta = [\mathbf X_0;\,\mathbf U_0]$, und
+$[\mathbf A, \mathbf B]$ werden gemeinsam aus
+
+\begin{equation}
+  \label{eq.dmdc}
+  [\mathbf A, \mathbf B]
+  \;=\;
+  \mathbf X_1 \cdot \begin{bmatrix}\mathbf X_0\\ \mathbf U_0\end{bmatrix}^{+}
+\end{equation}
+
+geschätzt. DMDc trennt damit Eigendynamik und Stellwirkung
+\cite{bruntonModernKoopmanTheory2022}: im vorliegenden Fall die
+Trennung von thermischer Eigendynamik und Ventilwirkung. DMDc ist das
+\edmd-Pendant zu \sindyc{} und stellt die unmittelbare Verbindung zur
+klassischen linearen Zustandsraum\-Systemidentifikation her; die
+\emph{Nichtlinearität} bleibt jedoch unerreichbar, solange
+$\boldsymbol\Theta$ nur rohe Zustände enthält.
+
+
+\subsection{Extended Dynamic Mode Decomposition (eDMD) und eDMDc}
+\label{ssec.sot.edmd.def}
+
+Genau hier setzt \edmd{} nach \cite{williamsDataDrivenApproximation2015}
+an: Statt die Dynamik im niedrigdimensionalen Zustandsraum linear zu
+erzwingen, hebt \edmd{} den Zustand über eine Liftung
+$\boldsymbol\psi(\mathbf x) = [\psi_1(\mathbf x),\dots,\psi_L(\mathbf x)]^\top$
+in einen höherdimensionalen Raum von Observablen, in dem die Dynamik
+näherungsweise linear wird: Nichtlinearität wird gegen Dimension
+getauscht. Mit $\boldsymbol\Theta = \boldsymbol\psi(\mathbf X_0)$
+und $\mathbf Y = \boldsymbol\psi(\mathbf X_1)$ ergibt dieselbe Regression
+(\ref{eq.lsq}) eine Matrix
+$\mathbf K \in \mathbb R^{L \times L}$ mit
+
+\begin{equation}
+  \label{eq.edmd}
+  \boldsymbol\psi(\mathbf x_{k+1}) \;\approx\; \mathbf K\, \boldsymbol\psi(\mathbf x_k).
+\end{equation}
+
+\edmd{} ist damit dieselbe kleinste-Quadrate-Regression auf einem
+gehobenen Zustand und konvergiert im Datenlimit gegen die
+Galerkin-Projektion des Koopman-Operators auf den durch
+$\boldsymbol\psi$ aufgespannten Unterraum
+\cite{williamsDataDrivenApproximation2015, bruntonModernKoopmanTheory2022}.
+Zwei Fallstricke sind für diese Arbeit relevant. Ohne einen tatsächlich
+Koopman-invarianten Unterraum entstehen Scheineigenwerte, und das
+gemeinsame Mitführen von $\mathbf x$ und seiner nichtlinearen Liftung
+erzeugt Closure-Probleme
+\cite[S.~285--286]{bruntonModernKoopmanTheory2022}.
+
+Um den Kreis zu schließen, wird (analog zum Schritt von DMD zu DMDc)
+der Eingang zurückgeholt: Mit
+$\boldsymbol\Theta = [\boldsymbol\psi(\mathbf X_0);\,\mathbf U_0]$
+entsteht eDMDc mit der gelifteten Update-Gleichung
+$\mathbf z_{k+1} = \mathbf A\,\mathbf z_k + \mathbf B\,\mathbf u_k$,
+$\mathbf z = \boldsymbol\psi(\mathbf x)$. Der praktische Reiz für die
+Regelung: Ein darauf aufgesetztes MPC-Problem ist ein konvexes
+quadratisches Programm, dessen Aufwand unabhängig von der Zahl der
+Observablen ist \cite[S.~304]{bruntonModernKoopmanTheory2022}.
+\cite{kordaLinearPredictorsNonlinear2018} zeigen, dass eDMDc-Modelle für
+nichtlineare MPC unter geeigneten Bedingungen asymptotisch konsistent
+gegen die wahre Koopman-Repräsentation konvergieren;
+\cite{boldDataDrivenMPCStability2025} liefern jüngst
+Stabilitätsgarantien für eDMD-basierte MPC. Bemerkenswert ist der von
+\cite[S.~305--306]{bruntonModernKoopmanTheory2022} gezeigte
+Grenzfall: Ein eDMDc-Modell auf reinen Zeitverzögerungskoordinaten ist
+strukturell mit einem ARX-Modell identisch. Damit schließt sich der
+Bogen zurück zur Baseline aus Abschnitt~\ref{sec.sot.arx}.
+
+
+
+
+
+% Bilineare Realisierung. Keys bruderAdvantagesBilinearKoopman2021 und
+% yahagiGeneralizedBilinearKoopman2026, beide in Masterarbeit.bib vorhanden.
+Zwischen dem in der Stellgröße linearen eDMDc-Prädiktor und einem in
+der Stellgröße voll nichtlinearen Modell liegt die bilineare
+Realisierung
+
+\begin{equation}
+  \label{eq.edmd.bilinear}
+  \mathbf z_{k+1} \;=\; \mathbf A\,\mathbf z_k
+  + \bigl(\mathbf N\,\mathbf z_k\bigr)\,u_k,
+\end{equation}
+
+hier für den in dieser Arbeit vorliegenden skalaren Stelleingang
+angeschrieben ($\mathbf N \in \mathbb R^{L\times L}$; bei mehreren
+Eingängen tritt je Eingang eine eigene Matrix hinzu). Die Stellwirkung
+skaliert mit dem gelifteten Zustand.
+\cite{bruderAdvantagesBilinearKoopman2021} zeigen theoretisch und
+experimentell, dass bilineare Koopman-Modelle lineare bei gleichem
+Datenbudget übertreffen, sobald die Dynamik eingangsaffin ist, die
+Stellgröße also über einen zustandsabhängigen Faktor eingeht.
+\cite{yahagiGeneralizedBilinearKoopman2026} bauen die bilineare
+Realisierung aus reinen Ein-/Ausgangsdaten auf und erproben sie als
+Mehrschritt-Prädiktor an einem realen Industriesystem. Für die
+Ladeluftstrecke ist diese Form einschlägig, weil die Ventilwirkung mit
+der anliegenden Temperaturspanne skaliert
+(Gl.~(\ref{eq.grundlagen.gain.epsntu})).
+Der Preis ist der
+Verlust des konvexen QP: Auf bilinearen Prädiktoren wird das
+MPC-Problem sequentiell quadratisch gelöst
+\cite{kelmanBilinearModelPredictive2011}.
+
+
+Die Wahl der Liftung $\boldsymbol\psi$ in (\ref{eq.edmd}) legt fest, welche
+Nichtlinearität überhaupt darstellbar ist. Zwei Familien sind für die
+vorliegende Strecke einschlägig. Polynomiale Observablen,
+$\psi_i(\mathbf x) \in \{1, x_1, x_2, x_1 x_2, x_1^2, \dots\}$, halten die
+Liftung konsistent zur Polynombibliothek in \sindy{} und sind die
+Standardwahl der verbreiteten Implementierungen.
+Zeitverzögerungskoordinaten, $\psi_i(\mathbf x_k) = \mathbf x_{k-i}$, sind
+eng mit der klassischen NARX-Featurewahl verwandt und stellen die oben
+gezeigte Brücke zur linearen Systemidentifikation her; theoretisch getragen
+werden sie vom Satz von Takens, nach dem die Zeitverzögerungseinbettung
+eines einzelnen Skalarsignals unter milden Bedingungen eine
+differenzierbare Einbettung der Trajektorie liefert.
+\cite{bruntonModernKoopmanTheory2022} berichten, dass Delay-Koordinaten für
+Regelungszwecke den reinen Monom-Observablen überlegen sind und \edmd{} ohne
+Delays trotz Liftung versagen kann.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Sparse Identification of Nonlinear Dynamics
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sparse Identification of Nonlinear Dynamics (SINDy)}
+\label{sec.sot.sindy}
+
+%\subsection{Grundalgorithmus und Optimierungsproblem}
+\label{ssec.sot.sindy.basis}
+
+\sindy{} wurde von \cite{bruntonDiscoveringGoverningEquations2016}
+eingeführt. Ausgangspunkt ist die Annahme, dass sich die Dynamik
+$\dot{\mathbf x} = f(\mathbf x)$ eines realen Systems in einer geeigneten
+Bibliothek
+$\boldsymbol\Theta(\mathbf x) = [\theta_1(\mathbf x),\dots,\theta_p(\mathbf x)]$
+nichtlinearer Kandidatenfunktionen durch wenige dominante Terme
+darstellen lässt:
+
+\begin{equation}
+  \label{eq.sindy.def}
+  \dot{\mathbf X} \;=\; \boldsymbol\Theta(\mathbf X)\,\boldsymbol\Xi,
+  \qquad
+  \boldsymbol\Xi \in \mathbb{R}^{p \times n},\quad \|\boldsymbol\Xi\|_0 \ll p\,n.
+\end{equation}
+
+Im Vergleich zur Klammer (\ref{eq.lsq}) sind zwei Dinge neu: Die
+Zielgröße ist die Zeitableitung $\dot{\mathbf X}$ (nicht der
+Folgezustand), und die Lösung wird dünn besetzt erzwungen. Die
+$\ell_0$-Pseudonorm $\|\boldsymbol\Xi\|_0$ zählt dabei die von null
+verschiedenen Einträge; gefordert sind deutlich weniger aktive Terme
+als die $p\,n$ möglichen Einträge, die $p$ Kandidatenfunktionen für
+$n$ Zustandsgleichungen aufspannen. Die Schätzung
+von $\boldsymbol\Xi$ erfolgt durch eines der folgenden Verfahren:
+
+\begin{itemize}
+  \item \textbf{Sequentially thresholded least squares (STLSQ).}
+    Alterniert zwischen unbeschränkter Least-Squares-Lösung und
+    Schwellwert-Setzen aller Koeffizienten $|\xi_i| < \lambda$ auf Null
+    \cite[Algorithmus~1]{bruntonDiscoveringGoverningEquations2016}.
+    Einfach, schnell, mit einem skalaren Hyperparameter.
+  \item \textbf{LASSO} ($\ell_1$-regularisierte Regression): löst
+    $\min_{\boldsymbol\xi} \|\dot{\mathbf X} - \boldsymbol\Theta\boldsymbol\xi\|_2^2
+    + \lambda\|\boldsymbol\xi\|_1$ und liefert eine weichere
+    Sparsifizierung; Elastic Net kombiniert $\ell_1$ und $\ell_2$ und ist
+    bei stark korrelierten Bibliotheksspalten robuster.
+\end{itemize}
+
+%\subsection{Wahl der Bibliothek}
+\label{ssec.sot.sindy.bib}
+
+Die Bibliothek $\boldsymbol\Theta$ bestimmt, welche Strukturen sich
+identifizieren lassen. Übliche Bausteine sind Polynome bis Grad $d$,
+trigonometrische Funktionen, rationale Terme und Indikatoren. Hinzu treten
+stückweise lineare Terme (Hinge), die eine Kennlinie mit Knick abbilden,
+und der Zustand einer exponentiellen Glättung, mit dem ein träger Anteil
+eines Eingangs als eigene Spalte geführt wird.
+\cite[Kap.~2]{bruntonDataDrivenScience2017} und
+\cite{desilvaPySINDyPythonPackage2020} geben eine systematische Übersicht.
+Für physikalisch motivierte Probleme empfehlen
+\cite{loiseauConstrainedSparseGalerkin2018}, die Bibliothek aus den
+Erhaltungsgleichungen abzuleiten und harte Gleichungsnebenbedingungen
+einzubauen. Diesen Weg greift die vorliegende Arbeit auf; er sichert
+zugleich die Dimensionstreue der Kandidatenterme, die sonst eine
+vorgeschaltete Buckingham-$\pi$-Analyse herstellen müsste
+\cite{wulffPhysicsinformedRegressionModels2025}.
+
+
+Die physik-informierte Linie reicht über die Bibliothekswahl hinaus. In
+Grey-Box-Strategien dient das physikalische Modell als Prior, während der
+gelernte Anteil die unmodellierten Residuen trägt
+\cite{subramanianWhiteboxMachineLearning2021,
+ellisMachineLearningEnhanced2021}. Eine online-aktualisierbare Variante
+liegt mit OASIS-P vor \cite{bhadrirajuOASISPOperableAdaptive2021}. Die
+Nachführung eines Modells über Verschmutzung und Sensordrift hinweg ist
+nicht Gegenstand dieser Arbeit.
+
+
+\subsection{SINDy mit Regeleingängen (SINDyc)}
+\label{ssec.sot.sindyc}
+
+\sindyc{} erweitert die Formulierung um Eingänge $\mathbf u$:
+
+\begin{equation}
+  \label{eq.sindyc.def}
+  \dot{\mathbf X} \;=\; \boldsymbol\Theta(\mathbf X, \mathbf U)\,\boldsymbol\Xi.
+\end{equation}
+
+Die Methode geht zurück auf
+\cite{bruntonSparseIdentificationNonlinear2016}; ein gut lesbares
+Tutorial gibt \cite{faselSINDyControlTutorial2021}.
+Bild~\ref{fig.sindyc.pipeline} zeigt den methodischen Ablauf im
+Überblick: Aus den gemessenen Zeitreihen wird eine nichtlineare
+Bibliothek aufgebaut, deren Koeffizienten anschließend per sparser
+Regression bestimmt werden. Wesentlich für diese Arbeit: \sindyc{} setzt
+voraus, dass die Eingänge tatsächlich Stellgrößen sind, die das System
+exzitieren. Ob der Charge-Air-Pfad diese Voraussetzung erfüllt, ist eine
+Frage an den Datenbestand (vgl.\
+\cite{boddupalliKoopmanOperatorsGeneralized2019} und
+Kapitel~\ref{ch.datenbasis}); beantwortet wird sie in
+Abschnitt~\ref{sec.erg.voranalyse} und in
+Abschnitt~\ref{sec.erg.clarbiter}.
+
+\begin{figure}[bht]
+  \begin{center}
+    \includegraphics[width=\textwidth]{sindyc_pipeline}
+    \caption{Schematische Darstellung der \sindyc-Pipeline. Aus den
+      gemessenen Zeitreihen von Zustand $\mathbf X$, Stellgröße
+      $\mathbf U$ und Störgrößen $\mathbf D$ wird eine Bibliothek
+      $\boldsymbol\Theta(\mathbf X, \mathbf U, \mathbf D)$ nichtlinearer
+      Kandidatenfunktionen aufgebaut. Die anschließende sparse Regression
+      $\min_{\boldsymbol\xi_k}\,\|\dot{\mathbf x}_k -
+      \boldsymbol\Theta^{\!\top}(\mathbf X, \mathbf U, \mathbf D)\,
+      \boldsymbol\xi_k\|_2 + \lambda\|\boldsymbol\xi_k\|_1$ liefert die
+      dünn besetzte Koeffizientenmatrix $\boldsymbol\Xi$ und damit das
+      identifizierte System.}
+    \label{fig.sindyc.pipeline}
+  \end{center}
+\end{figure}
+
+
+\subsection{Esemble-Erweiterungen}
+\label{ssec.sot.sindy.robust}
+
+Die in \cite{bruntonDiscoveringGoverningEquations2016} präsentierte
+Standardform ist gegenüber Messrauschen und kurzen Trainingsfenstern
+empfindlich. Drei Erweiterungen sind in der Literatur konsolidiert.
+Ensemble-\sindy{} \cite{faselEnsembleSINDyRobustSparse2022} aggregiert
+Modelle aus Bootstrap-Stichproben der Bibliothek und der Datenmatrix und
+liefert Inklusionswahrscheinlichkeiten je Kandidatenterm. Weak-\sindy{}
+\cite{messengerWeakSINDyPartial2021} ersetzt die punktweise Ableitung durch
+eine schwache Form, in der die Gleichung mit einer Testfunktion gewichtet
+und über ein Zeitfenster integriert wird, so dass die Differentiation
+analytisch auf die Testfunktion fällt und die Verstärkung hochfrequenten
+Rauschens entfällt. Die Modellselektion über
+Informationskriterien \cite{dongImprovedSparseIdentification2023,
+manganModelSelectionDynamical2017} ersetzt den Schwellwert in STLSQ durch
+AIC/BIC oder eine Pareto-Front aus Trainingsfehler und Sparsität; sie tritt
+hier nicht als Wahlregel auf, sondern allein als nachgelagerte
+Sparsamkeitsprüfung. Woran zwei Fassungen unterschieden
+werden, legt die Bewertungsleiter in Abschnitt~\ref{ssec.meth.gates}
+fest.
+
+
+\label{ssec.sot.sindy.discrete}
+
+Gl.~(\ref{eq.sindy.def}) ist in der Brunton-Originalform kontinuierlich
+angeschrieben: $\dot{\mathbf x} = \boldsymbol\Theta(\mathbf x)\boldsymbol\Xi$.
+In der praktischen Implementierung steht aber eine zeitdiskrete
+Zustandsfolge $\{\mathbf x_k\}$ zur Verfügung. Zwei Formulierungen sind
+verbreitet:
+
+\begin{itemize}
+  \item \textbf{Kontinuierlich (Standardform).} Schätze
+    $\dot{\mathbf x}_k$ numerisch und identifiziere $\boldsymbol\Xi$ in
+    der kontinuierlichen Form. Vorteil: physikalisch lesbares Modell mit
+    Größen wie $[\mathrm{K}/\mathrm{s}]$. Nachteil: numerische
+    Differentiationsempfindlichkeit gegen Rauschen.
+  \item \textbf{Diskret (map-Form).} Identifiziert wird die Update-Abbildung
+    $\mathbf x_{k+1} = \mathbf x_k + \Delta t\,
+    \boldsymbol\Theta(\mathbf x_k)\boldsymbol\Xi$ direkt. Vorteil: keine
+    Ableitung nötig. Nachteil: implizite Abhängigkeit von $\Delta t$
+    macht das Modell weniger universell.
+\end{itemize}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{kapitel3/pictures/Esemble_Methoden.png}
+  \caption[Ensemble-SINDy: Daten- und Bibliotheksstichproben]{Ensemble-SINDy:
+    Daten-Bagging und Library-Bagging. Übernommene Darstellung aus
+    \cite[Abb.~2]{faselEnsembleSINDyRobustSparse2022};
+    $\mathbf U$ als Zustandsdatenmatrix in der Notation der Quelle,
+    nicht als Stellgrößenmatrix dieser Arbeit.}
+  \label{fig.sot.ensemble}
+\end{figure}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  SINDy vs eDMD
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Gemeinsamkeiten und Grenzen der Verfahren}
+\label{ssec.sot.edmd.vs.sindy}
+
+Die bisher getrennt behandelten Verfahren lösen zu einem großen Teil
+dasselbe Problem. \arx, \sindyc{} und \edmdc{} sind linear in ihren
+Parametern und bestimmen eine Koeffizientenmatrix nach (\ref{eq.lsq}).
+Sie unterscheiden sich in drei Entwurfsentscheidungen: der Bibliothek
+$\boldsymbol\Theta$, dem Lernziel $\mathbf Y$ und der Regularisierung,
+mit der die Koeffizienten beschränkt oder ausgewählt werden.
+
+\sindy{} sucht eine sparsame Darstellung der Zeitableitung im Zustand,
+\edmd{} eine lineare Darstellung der Folgebeobachtung im gehobenen Raum
+((\ref{eq.sindy.def}) und (\ref{eq.edmd})). Der Unterschied liegt im
+Lernziel und in der Bibliothek, nicht im Schätzverfahren.
+
+Für die beiden oberen Verfahrensfamilien kommt zu diesen Entscheidungen
+eine Reihe gemeinsamer Grenzen hinzu, die aus der Wahl der Bibliothek und
+aus der Schätzung über kleinste Quadrate folgen. Sie stehen in
+Abschnitt~\ref{sec.sot.grenzen}.
+
+\label{sec.sot.grenzen}
+
+Eine ausgewogene Würdigung beider Verfahrensfamilien muss auch ihre
+Grenzen benennen:
+
+\begin{itemize}
+  \item \textbf{Empfindlichkeit gegen Messrauschen.} Insbesondere
+    \sindy{} mit numerischer Ableitung reagiert empfindlich; Ensemble-
+    und Weak-Varianten mildern, lösen das Problem aber nicht vollständig
+    \cite{faselEnsembleSINDyRobustSparse2022, messengerWeakSINDyPartial2021}.
+  \item \textbf{Abhängigkeit von der Bibliothek bzw.\ Liftung.} Bei
+    unzureichender Bibliothek wird kein konsistentes Modell
+    identifiziert. Eine systematische Bibliothekswahl ist nach wie vor
+    offener Forschungspunkt \cite{kaiserSparseIdentificationNonlinear2018}.
+  \item \textbf{Extrapolationsfähigkeit.} Da die Bibliothek lokal aus
+    Daten gefittet wird, ist Extrapolation in nicht beprobte
+    Betriebsbereiche nur eingeschränkt zuverlässig
+    \cite{atamAdvancedAirPath2018}.
+  \item \textbf{Stabilitätsgarantien.} Für \edmd-MPC liegen jüngst
+    formale Garantien vor \cite{boldDataDrivenMPCStability2025}; für
+    \sindy-MPC ist die Theorie weniger ausgereift.
+\end{itemize}
+
+Diese Grenzen begründen, warum die vorliegende Arbeit beide Familien
+parallel prüft und sich nicht vorab auf eine Methodenwahl festlegt.
+
+
+\section{Closed-Loop-Identifikation}
+\label{closed_loop_identifkation}
+
+Im Feld folgt die Ventilstellung der Last. Jeder verfügbare Feldmesswert
+entsteht deshalb unter Rückführung, in der Stellgröße und Störung über
+den Regler korreliert sind.
+
+
+textbf{Identifizierbarkeit unter Closed-Loop-Bedingungen.}
+    \cite{dahdahClosedloopKoopmanOperator2024} zeigen, dass naives
+    \edmd{} bei rückgekoppelten Eingängen verzerrte Operatoren liefert;
+    eine analoge Sensitivität ist für \sindy{} zu erwarten.
+
+
+Das Problem ist in den Erstveröffentlichungen der hier verwendeten
+Verfahren selbst benannt.
+Für \sindyc{} halten
+\cite[S.~713]{bruntonSparseIdentificationNonlinear2016} fest: Wird die
+Stellgröße per Rückführung eingestellt, korreliert sie mit dem Zustand,
+die Wirkung der Stellgröße ist von der Eigendynamik nicht mehr zu
+unterscheiden, und die Regression wird schlecht konditioniert. Für DMDc
+beschreiben \cite[S.~153]{proctorDynamicModeDecomposition2016} denselben
+Befund: Bei zustandsabhängiger Rückführung $u_k = K\,\mathbf x_k$ ist
+$\mathbf B$ mit dem dort beschriebenen Verfahren nicht rekonstruierbar;
+in Gl.~(\ref{eq.dmdc}) verliert die Merkmalsmatrix
+$[\mathbf X_0;\,\mathbf U_0]$ dann ihren Zeilenrang. Ein aufaddiertes
+mittelwertfreies Störsignal, $u_k = K\,\mathbf x_k + \delta_k$, genügt:
+Es bricht die Symmetrie der Rückführung und macht $\mathbf A$ und
+$\mathbf B$ getrennt schätzbar. Ein solches Störsignal setzt allerdings
+einen Eingriff in die Anlage voraus.
+% Trennung SdT/Methodik (Copilot 02.09.2026, Anweisung Thomas): der Verweis
+% auf den eigenen Diesel/Gas-Modussprung stand hier und ist nach Kap. 5
+% verschoben. Stand der Technik traegt nur das Allgemeine.
+% Bildvorschlag (Blockschaltbild des geschlossenen Kreises, VISIO) steht in
+% notizen\CH3_SDT_NUTZUNG_0309.md § 4.
+
+
+Die Verfahren zur Identifikation unter Rückführung lassen sich in drei
+Schulen ordnen \cite{forssellClosedloopIdenticationRevisited1999}. Die
+direkte Methode schätzt aus Stellgröße und Ausgang, als wäre der Kreis
+offen. Konsistent ist sie nur, wenn das wahre Störmodell $H_0$ im
+Modellsatz liegt \cite{gustavssonIdentificationProcessesClosed1977}.
+% Quelle: karimiComparisonClosedloopIdentification1998, S. 161
+% ALT (Copilot 01.09.): "zur Differenz $H-\hat H$" — $H$ war nicht eingeführt,
+% oben heißt das wahre Störmodell $H_0$.
+Liegt $H_0$ außerhalb, bleibt die Verzerrung der Strecke proportional zur
+Rauschvarianz und zur Differenz $H_0-\hat H$ zwischen wahrem und
+angesetztem Störmodell
+\cite{karimiComparisonClosedloopIdentification1998}. Davon unabhängig
+wirkt eine zweite Ursache, die fehlende Anregung.
+% Quelle: lovlandClosedloopIdentificationChallenge2025, Theorem 1, Gl. (26)
+Geht der Anteil der Sollwertvarianz an der Gesamtvarianz gegen null,
+wandert der Grenzwert des Schätzers gegen die negativ invertierte
+Reglerverstärkung $-K^{-1}$
+\cite{lovlandClosedloopIdentificationChallenge2025}.
+% REPARATUR (Copilot, 02.09.2026): der Satzanfang "Ein ARX-Praediktor" war in die
+% Kommentarzeile geraten, der gesetzte Satz begann deshalb mit "hoher Ordnung".
+Ein ARX-Prädiktor
+hoher Ordnung (HO-ARX) oder eine Box-Jenkins-Struktur ist die übliche
+Abhilfe gegen die erste Ursache \cite{ljungSystemIdentificationTheory1999}.
+
+Die indirekte Methode identifiziert zuerst den geschlossenen Kreis vom
+Sollwert zum Ausgang und rechnet über den bekannten Regler auf die
+Strecke zurück \cite{forssellClosedloopIdenticationRevisited1999}. Sie
+verlangt einen linearen und exakt bekannten Regler
+\cite{agueroVirtualClosedLoop2011}. Ohne bewegten Sollwert fehlt der
+Rückrechnung die Anregung. Joint-Input-Output-Verfahren und die
+dual-Youla-Parametrierung verallgemeinern beide Wege über einen
+virtuellen Regler, mit dem sich der Kompromiss zwischen der Genauigkeit
+des Rauschmodells und der Reglerkenntnis parametrieren lässt
+\cite{agueroVirtualClosedLoop2011}%
+\anno{Quelle nachtragen: Hansen 1989, Erstquelle der
+dual-Youla-Parametrierung}. Als Subspace-Variante für den geschlossenen
+Kreis tritt die prädiktorbasierte Subspace-Identifikation hinzu (PBSID,
+engl.\ Predictor-Based Subspace Identification)%
+\anno{Quelle nachtragen: Chiuso 2007, Erstdefinition PBSID}. Für
+rückgekoppelt stabilisierte Systeme liegt zudem eine neuronale Ausprägung
+vor \cite{boroujeniNeuralIdentificationFeedbackStabilized2025}.
+
+Die Instrumentalvariablen-Schätzung und das Zwei-Stufen-Verfahren nutzen
+beide den Sollwert als exogene Größe, die mit dem Ausgangsrauschen
+unkorreliert ist \cite{gilsonInstrumentalVariableMethods2005}. Das
+Zwei-Stufen-Verfahren projiziert die Stellgröße zuerst auf den Sollwert
+und schätzt die Strecke aus dem projizierten Anteil
+\cite{vandenhofIdentificationDynamicModels2013}%
+\anno{Quelle nachtragen: Schrama 1993, Erstquelle des
+Zwei-Stufen-Verfahrens}. Die Einordnung fällt je nach Quelle verschieden
+aus. Das Zwei-Stufen-Verfahren gilt einmal als indirektes Verfahren
+\cite{karimiComparisonClosedloopIdentification1998} und einmal als
+Ausprägung der Joint-Input-Output-Familie
+\cite{forssellClosedloopIdenticationRevisited1999}, die
+Instrumentalvariable wird als eigene Klasse geführt
+\cite{gilsonInstrumentalVariableMethods2005}.
+% Quelle: karimiComparisonClosedloopIdentification1998, S. 160
+Die Verzerrung verteilt sich über die Frequenz, und ihre Gewichtung hängt
+vom Regler ab \cite{karimiComparisonClosedloopIdentification1998}. Bei
+Instrumentalvariablen- und Zwei-Stufen-Verfahren bestimmen die Stärke des
+Instruments und die gewählte Modellordnung, wie viel Verzerrung übrig
+bleibt \cite{gilsonInstrumentalVariableMethods2005}. Einen dritten Weg
+gehen Verfahren zur Korrektur der Verzerrung, die den Verzerrungsterm
+mitschätzen
+\cite{mejariBiascorrectionMethodClosedloop2018,mandloiMethodsClosedLoop2015};
+für den geschlossenen Kreis ist die Äquivalenz der bias-eliminierten
+Kleinste-Quadrate-Schätzung (BELS) und der Instrumentalvariablen-Schätzung
+gezeigt \cite{gilsonRelationBiaseliminatedLeastsquares2001}.
+
+
+
+% Quelle: bittencourtAlgorithmFindingProcess2015, S. 377 (1,45 % markierte Abtastwerte), S. 369 (Ausregelbetrieb per Konstruktion ausgeschlossen), S. 378 (Ausschlussgrund im geschlossenen Kreis)
+Wie selten die Bedingung im Anlagenbetrieb erfüllt ist, zeigt eine
+Auswertung von 195 Regelkreisen über 37 Monate. Als potenziell brauchbar
+markiert der Suchalgorithmus 1,45\,\% der Abtastwerte, wobei
+Ausregelbetrieb bei konstantem Sollwert per Konstruktion nicht durchsucht
+wird \cite{bittencourtAlgorithmFindingProcess2015}. Die Zahl misst damit
+die Ausbeute dieses Verfahrens, nicht den Informationsgehalt von
+Routinedaten schlechthin. Im geschlossenen Kreis ist der fehlende
+Sollwertsprung der häufigste Ausschlussgrund.
+% Quelle: bittencourtAlgorithmFindingProcess2015, Tabelle 2 (S. 378); die 40 min je Kreis sind eigene Rechnung aus dieser Tabelle, siehe EHRGQL83_bittencourt2015_*.md Z. 61, 77 und 102
+Für den hier einschlägigen Kreistyp fällt der Befund noch enger aus. Auf
+die 50 Temperaturkreise entfallen über die 37 Monate rund 40 min
+verwertbare Daten je Kreis, gerechnet aus der dortigen Tabelle 2.
+
+Das Verwerfen schwach informativer Abschnitte senkt den Gesamtfehler,
+sofern das Modell in Gleichungsfehlerstruktur mit gemeinsamem
+Nennerpolynom vorliegt und die Daten aus dem offenen Kreis stammen
+\cite{carretteDiscardingDataMay1996}. Bei untermodelliertem Rauschen
+verzerren die stationären Abschnitte die Modellparameter; daraus folgt
+kein allgemeines Argument gegen große Datenmengen. Wie eine
+Anregung auszulegen ist, die den laufenden Betrieb wenig stört und für
+den Reglerentwurf dennoch reicht, behandelt der Entwurf des
+kostenminimalen Experiments \cite{bomboisLeastCostlyIdentification2006}.
+
+Auf der Koopman-Seite ist der Befund enger gefasst. Ein rückgekoppelter
+Eingang $u = h(\mathbf x)$ macht Eigendynamik und Stellwirkung
+ununterscheidbar \cite{proctorGeneralizingKoopmanTheory2018}.
+Bei bekanntem Regler lassen sich Kreis und Strecke gemeinsam und unter
+Nebenbedingungen schätzen, bewertet am Vorhersagefehler des geschlossenen
+Kreises \cite{dahdahClosedloopKoopmanOperator2024}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%-------------------------------------------
+%Identifikation im geschlossenen Regelkreis
+%%%%%%%%%%%%%%%%%%%%%%%%%%%-------------------------------------------
+
+%\section{Identifikation im geschlossenen Regelkreis}
+%\label{ssec.grundlagen.clid}
+
+In meisten Industriellen Systeme laufen unter einer regelung und die Eingangssignae der Systeme sind teils durch ein Rückgabe anderer signale bestimmt. Sobald dies der Fall ist, liegt ist das Stellsignal korreliert mit der Regelgröße. Dadurch lässt sich schwer der genaue Einfluss der Stellgröße und der REgelgröße unterscheiden da sie sich stark abhängig voneinander verhalten.
+
+Um dies aufzulösen gibt es zwei prinzipielle Vorgehensweisen:
+
+Direkte Motehode:
+
+Man ignoriert es einfach und bestimmt direkt aus den messdaten
+
+Indirkete Methdoe;
+
+
+Messdaten. Die Rückkopplung bindet die Stellgröße an den Verlauf der
+Zielgröße. Die Strecke wird für die folgende Betrachtung als lineares
+Modell mit additivem Störanteil geschrieben,
+\begin{equation}
+  \label{eq.grundlagen.cl.strecke}
+  y(t) \;=\; G(q)\,u(t) \;+\; H(q)\,e(t),
+\end{equation}
+wobei $q$ den Verschiebeoperator bezeichnet, $e(t)$ weißes Rauschen ist
+und die Störübertragung $H(q)$ als monisch und stabil vorausgesetzt
+wird. Der Regler bildet die Stellgröße aus der Regelabweichung,
+\begin{equation}
+  \label{eq.grundlagen.cl.regler}
+  u(t) \;=\; C(q)\,\bigl(r(t) - y(t)\bigr).
+\end{equation}
+Einsetzen von Gl.~\eqref{eq.grundlagen.cl.strecke} in
+Gl.~\eqref{eq.grundlagen.cl.regler} und Auflösen nach $u(t)$ liefert
+\begin{equation}
+  \label{eq.grundlagen.cl.u}
+  u(t) \;=\; S(q)C(q)\,r(t) \;-\; S(q)C(q)H(q)\,e(t),
+  \qquad S(q) = \bigl(1 + C(q)G(q)\bigr)^{-1}.
+\end{equation}
+Über den zweiten Term führt die Stellgröße die Störung des Prozesses
+mit sich, weil der Regler auf sie antwortet.
+% ===== ERGÄNZT Copilot 01.09.2026 (Fassung n. Lektor) =====
+$S(q)$ ist die Empfindlichkeitsfunktion des geschlossenen Kreises. Ihr
+Frequenzgang $|S(\mathrm e^{\mathrm j\omega})|$ gibt an, ob der Kreis
+eine Störung unterdrückt ($|S| < 1$), unverändert durchlässt
+($|S| \approx 1$) oder verstärkt ($|S| > 1$). Die Auswertung in
+Abschnitt~\ref{sec.erg.clarbiter} trägt die Größe über der
+Periodendauer auf und greift auf diese Deutung zurück.
+
+Der Regressor $\varphi(t)$ eines in den Parametern linearen Modells
+enthält verzögerte Werte von $y$ und $u$, der Vektor $\theta_0$ die
+wahren Parameter. Die Schätzung über kleinste Quadrate strebt mit
+wachsender Datenlänge gegen
+\begin{equation}
+  \label{eq.grundlagen.cl.bias}
+  \hat{\theta} \;\longrightarrow\; \theta_0 \;+\;
+  \bigl[\bar{\mathrm{E}}\{\varphi\varphi^{\top}\}\bigr]^{-1}\,
+  \bar{\mathrm{E}}\{\varphi\,v\}, \qquad v(t) = A(q)H(q)e(t).
+\end{equation}
+Dabei ist $v(t)$ der Gleichungsfehler des Modells mit Nennerpolynom
+$A(q)$, nicht die Störung $H(q)e(t)$ selbst.
+% Quelle: Ljung 1999, System Identification, 2. Aufl., Kap. 8 (Konvergenz und Konsistenz der LS-Schaetzung)
+Der Kreuzterm $\bar{\mathrm{E}}\{\varphi v\}$ verschwindet im offenen
+Kreis nur, wenn $v(t)$ weiß ist oder der Regressor keine verzögerten
+Ausgänge enthält; andernfalls ist auch die offene Schätzung verzerrt
+\cite[Kap.~8]{ljungSystemIdentificationTheory1999}. Im geschlossenen
+Kreis ist er nach Gl.~\eqref{eq.grundlagen.cl.u} von null verschieden.
+% Quelle: Forssell und Ljung 1999, Automatica 35(7), S. 1215 bis 1241 (Bias der direkten Methode, Kreuzspektrum); Einzelseite im .bib nicht belegt
+Im Frequenzbereich steht anstelle des Kreuzterms das Kreuzspektrum
+$\Phi_{ue}(\omega)$, das allein ohne Rückführung verschwindet
+\cite{forssellClosedloopIdenticationRevisited1999}. Konsistenz der
+direkten Methode bleibt erreichbar, verlangt aber ein Rauschmodell, das
+die wahre Störübertragung $H_0(q)$ enthält
+% Quelle: Gustavsson, Ljung und Söderström 1977, Automatica 13(1), S. 59 bis 75 und Ljung 1999
+\cite{gustavssonIdentificationProcessesClosed1977,%
+ljungSystemIdentificationTheory1999}.
+
+Beide Terme von Gl.~\eqref{eq.grundlagen.cl.bias} stehen für je eine
+Fehlerquelle. Ein singuläres oder schlecht konditioniertes
+$\bar{\mathrm{E}}\{\varphi\varphi^{\top}\}$ kennzeichnet den Anregungs-
+und Vorsteuerungsfall, ein von null verschiedener Kreuzterm den
+Rückkopplungsfall. Die Aktuatorsättigung wirkt auf beide Terme
+gegenläufig: sie beseitigt den Kreuzterm und entartet zugleich die
+Anregungsmatrix. Die Gleichung gilt für jedes in den Parametern lineare
+Modell und damit auch für \sindyc und \edmdc. Bei \sindyc setzt die
+Schwellenwertauswahl der Terme auf der verzerrten Lösung auf, sodass die
+Verzerrung dort zusätzlich die Termauswahl trifft.
+
+Ob ein Datensatz die gesuchten Parameter festlegt, entscheidet die
+Anregung. Ein quasistationäres Signal heißt persistent anregend der
+Ordnung $n$, wenn die aus $r_u(\tau) = \bar{\mathrm{E}}\{u(t)u(t-\tau)\}$
+ohne Mittelwertabzug gebildete Matrix
+\begin{equation}
+  \label{eq.grundlagen.cl.pe}
+  \bar{R}_n(u) \;=\;
+  \begin{bmatrix}
+    r_u(0)   & \cdots & r_u(n-1) \\
+    \vdots   & \ddots & \vdots   \\
+    r_u(n-1) & \cdots & r_u(0)
+  \end{bmatrix}
+\end{equation}
+% Quelle: Ljung 1999, System Identification, 2. Aufl., Kap. 13 (Experimententwurf, Informativitaet, persistente Anregung)
+positiv definit ist \cite[Kap.~13]{ljungSystemIdentificationTheory1999}.
+% Quelle: Gevers, Bazanella, Bombois und Miskovic 2009, IEEE TAC 54(12), S. 2828 bis 2840
+Dieselbe Frage ist als Rangproblem der Informationsmatrix formuliert und
+liefert so ein Kriterium für ausreichende Anregung
+\cite{geversIdentificationInformationMatrix2009}. Last und Störung
+wirken ebenfalls exogen. Stellbar und von der Störung unabhängig ist
+allein der Sollwert. Bleibt er unverändert, verliert die
+Informationsmatrix ihren Rang in der Richtung des Stellkanals, und der
+Fehler wird mit wachsender Datenmenge nicht kleiner.
+% Quelle: Ljung 1999, System Identification, 2. Aufl., Abschnitt 13.4 (Identifiability under closed-loop operation)
+Ein Regler hinreichend hoher Ordnung oder ein Regler, der zwischen
+mehreren Gesetzen umschaltet, macht die Daten auch bei festem Sollwert
+informativ \cite[Abschn.~13.4]{ljungSystemIdentificationTheory1999}.
+Darauf stützt sich der Modussprung als natürliches Instrument in
+Abschnitt~\ref{sec.erg.feld}. Informativität sichert die
+Identifizierbarkeit, nicht die Konsistenz eines Schätzers; die Bedingung
+an das Störmodell aus Gl.~\eqref{eq.grundlagen.cl.bias} bleibt bestehen.
+
+In dieser Arbeit treten zwei Sonderfälle auf. Im ersten stellt
+eine Vorsteuerung die Stellgröße aus einer gemessenen Störgröße,
+näherungsweise $\valveCA \approx f(\text{Last})$. Diese Störgröße treibt
+zugleich die Strecke, weshalb dasselbe Rangargument greift wie bei einer
+Rückführung über den Zustand
+% Quelle: Proctor, Brunton und Kutz 2018, SIAM J. Appl. Dyn. Syst. 17(1), S. 909 bis 930
+\cite{proctorGeneralizingKoopmanTheory2018}. Stellgröße und Regressor
+werden kollinear, und eine größere Datenmenge ändert daran nichts.
+% ===== ERGÄNZT Copilot 01.09.2026 (Fassung n. Lektor) =====
+Diese Verwechselbarkeit von Stell- und Störwirkung wird im Folgenden
+als Konfundierung bezeichnet; ihr Grad wird in
+Kapitel~\ref{ch.methodik} als Bestimmtheitsmaß der Stellgröße gegen
+die Last gemessen.
+
+Der zweite Sonderfall ist die Sättigung des Aktuators. Steht das Ventil
+am Anschlag, wirkt keine Rückführung mehr auf die Stellgröße, und der
+Kreuzterm verschwindet. Der erste Term entartet dafür, denn eine
+konstante Stellgröße ist persistent anregend der Ordnung 1 und liefert
+allein den stationären Anteil der Stellwirkung. Dieser Anteil ist vom
+Absolutglied des Modells nicht zu trennen. Der Störpfad bleibt aus
+solchen Abschnitten identifizierbar, der Stellkanal nicht.
+
+Eine weitere Bedingung betrifft die Zeitskala. Arbeitet der Regler
+schneller als der Abtasttakt des Modells, liegt zwischen zwei
+Abtastzeitpunkten bereits eine vollständige Rückkopplung. Deren Wirkung
+faltet sich in den Stellkanal ein, ohne dass die Modellstruktur einen
+Platz dafür vorsieht. Die Modellstruktur ist in diesem Fall
+fehlspezifiziert, vergleichbar einem Aliasing der Rückführung. Wie stark
+dieser Anteil wiegt, zeigt Abschnitt~\ref{sec.erg.clarbiter}.
+
+% ===== NEUFASSUNG Copilot 01.09.2026 (Dreiteilung; Altfassung entfernt
+% ===== 03.09., s. ch2.tex.bak_pre_4d0309) =====
+Ein Streckenmodell hat hier drei getrennt prüfbare Eigenschaften: das
+Niveau (den stationären Wert, auf den die Prognose einläuft), die
+Dynamik (Zeitkonstante und Totzeit) und die Stellwirkung (die
+Verstärkung des Ventilkanals $\valveCA$). Der beschriebene
+Rückführmechanismus betrifft die beiden letzten; sie hängen daran, ob
+die Stellgröße im Datensatz unabhängig von der Störung variiert. Das
+Niveau gehört nicht dazu: Es entsteht als Arbeitspunkt-Offset aus
+anderer Ursache und bleibt unabhängig davon stellbar. In der Sättigung
+fallen Niveau und stationärer Stellanteil allerdings zusammen (siehe
+oben); dort trägt die Trennung nicht. Auf diese Dreiteilung greifen
+die Bewertungsleiter (Abschnitt~\ref{ssec.meth.gates}), die
+Modellbewertung (Kapitel~\ref{ch.ergebnisse}) und der
+Störgrößenbeobachter des Reglers (Abschnitt~\ref{sec.methodik.mpc})
+zurück. Welche dieser Eigenschaften sich aus Regelkreisdaten
+zurückgewinnen lässt, prüft Abschnitt~\ref{sec.erg.clarbiter} gegen
+die am Prüfstand bekannte Wahrheit.
+Abschnitt~\ref{sec.erg.feld} überträgt die Frage auf den Feldbetrieb.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Diskusion im Bezug zum Thema
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Vorhandene Arbeiten mit Bezug zum Thema}
+\label{sec.sot.application}
+Intern wurde bereits eine Arbeit zu der Modellierung der Ansteuerung des Dreiwegeventils geschrieben. Dort wird die LT Cooling Water Temperatur als konstant angenommen. \cite{rupprechtAnalysisSimulationOptimisation2016}
+
+
+
+Datengetriebene Modellierung und Regelung des Luftpfades wurde primär für
+PKW- und Nutzfahrzeug\-Dieselmotoren untersucht. Wichtige Beiträge:
+
+\begin{itemize}
+  \item \cite{atamAdvancedAirPath2018} entwickelt einen erweiterten
+    LPV-Regler für den Diesel-Luftpfad und überführt nichtlineare
+    Modelle in eine parameterabhängige lineare Form.
+  \item \cite{aranDieselEngineAirpath2020, aranFlexibleRobustControl2019}
+    kombinieren datengetriebene Störbeobachter mit Sliding-Mode- und
+    GPR-basierten Reglern für serienreife Steuergeräte. Die Dissertation
+    \cite{aranFlexibleRobustControl2019} ist methodisch die direkteste
+    Referenzarbeit zur datengetriebenen Luftpfad-Modellierung eines
+    schwergängigen Diesel-Antriebs; sie verwendet jedoch
+    Multi-Input-Single-Output-NFIR-Modelle für MAF und MAP, nicht
+    \sindy{} oder \edmd, und zielt auf PKW-/Lkw-Größenklassen.
+  \item \cite{bardosControlOrientedAir2013} und
+    \cite{moriyasuDieselEngineAir2019} stellen regelungsorientierte
+    Modelle für aufgeladene Dieselmotoren vor.
+  \item Für \emph{Großmotoren} bzw.\ Schiffsdiesel sind die Arbeiten von
+    \cite{baldiDevelopmentCombinedMean2015} (kombiniertes MVEM/0D-Modell
+    für einen Viertakt-Schiffsdiesel) und
+    \cite{theotokatosCycleMeanValue2010} maßgeblich. Beide Beiträge sind
+    White-Box-getrieben und liefern damit den Kontrast zur
+    datengetriebenen Sicht dieser Arbeit.
+  \item \cite{beranModelbasedApproachControl2021} ist die für die
+    Ladelufttemperatur direkteste Arbeit: eine Regelstrategie für ein
+    Ladeluftkühlkonzept mit automatisierter Erzeugung vereinfachter
+    Steuermodelle via Machine Learning. Die dort gewählte
+    Methodenfamilie (Regression / Random Forest) ist jedoch nicht
+    physikalisch interpretierbar; \sindy{} und \edmd{} schließen diese
+    Lücke.
+\end{itemize}
+
+Im Umfeld der Motorensystemidentifikation sind insbesondere die Arbeiten
+der Yahagi-Gruppe einschlägig \cite{yahagiSparseIdentificationNonlinear,
+yahagiSparseIdentificationNonlinear2025, yonezawaSparseIdentificationNonlinear2025}.
+Diese Arbeiten setzen \sindy{} für die Identifikation einzelner
+Untersysteme von PKW-Motoren ein und berichten kompakte, regelbasiert
+einsetzbare Modelle. Eine systematische Übertragung auf
+mittelschnelllaufende Großmotoren mit ihren um Größenordnungen längeren
+thermischen Zeitkonstanten ist nicht beschrieben. Für die industrielle
+Robustheit ist die Ensemble-Linie
+\cite{faselEnsembleSINDyRobustSparse2022} sowie die auf industrielle
+Prozesse zugeschnittene Sparse-Identifikation (EMEC-nahe Ansätze,
+\cite{bhadrirajuOASISPOperableAdaptive2021}) einschlägig.
+
+Für \edmd{} und Koopman-Methoden im Antriebsstrang sind die Beiträge von
+\cite{medaKoopmanBasedMethodsEV2025} (Antriebsstrang von Elektrofahrzeugen)
+und \cite{zinageDataDrivenModeling2022} exemplarisch. Beide bestätigen
+das in Abschnitt~\ref{ssec.sot.edmd.def} skizzierte Bild, dass
+\edmd-Modelle bei sorgfältig gewählter Liftung präzise Vorhersagen bei
+moderaten Datenmengen erlauben. Für die modellprädiktive Regelung ist
+\cite{kordaLinearPredictorsNonlinear2018} die Kernreferenz, weil die
+globale lineare Repräsentation im gelifteten Raum die Formulierung des
+Regelproblems als quadratisches Programm erlaubt
+(Abschnitt~\ref{sec.methodik.mpc}); der
+% ALT (Copilot 01.09.): \ref{sec.sot.mpc} war tot, das Label existiert nur
+% noch in _alt\ch3_old.tex; die MPC-Formulierung steht jetzt in Kap. 5.
+% 2. Durchgang nach Lektor: "klassische lineare MPC-Werkzeuge nutzbar" auf
+% QP-Formulierung zurückgenommen, die eigene Umsetzung nutzt keine
+% MPC-Toolbox (Lizenz), sondern einen MATLAB-Funktionsblock.
+Stand der Koopman-MPC-Theorie ist in
+\cite{strasserOverviewKoopmanbasedControl2026} konsolidiert, und
+\cite{dahdahClosedloopKoopmanOperator2024} adressiert den
+Closed-Loop-Bias auf Koopman-Seite.
+
+Eine Anwendung von \sindy{} oder \edmd{} auf die Ladelufttemperatur eines
+Dual-Fuel-Großmotors ist in der Sichtung für diese Arbeit nicht
+aufgetreten. Grundlage sind der für die Arbeit aufgebaute Zotero-Bestand
+und eine Websuche, beide mit Stand 02.09.2026, gesucht über die
+Verfahrensnamen SINDy, SINDYc, Koopman, eDMD und eDMDc in Verbindung mit
+Ladeluft, Ladeluftkühler, charge air, intercooler, Dual-Fuel und
+Großmotor. Aus derselben Sichtung stammen zwei weitere Leerbefunde: keine
+der gefundenen \sindy- oder Koopman-Arbeiten prüft ihre Residuen auf
+Autokorrelation, Kreuzkorrelation mit dem Eingang oder Kohärenz, und ein
+quasi-LPV-Prädiktor für die Ladelufttemperatur unter modellprädiktiver
+Regelung ist nicht beschrieben. Alle drei Aussagen gelten für diesen
+Rechercheumfang und sind kein Nachweis der Nichtexistenz.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Einordnung und Abgrenzung der Arbeit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% COPILOT-ZUSATZ BEGIN ch3-15
+\par\smallskip
+\noindent\textbf{Copilot: Ergänzende Stichpunkte und Prüfhinweise}
+\par\smallskip
+\begin{itemize}
+  \item \textbf{Großmotor-Kühlkreis.}
+    Rupprecht: gekoppelte Ladeluft- und HT/LT-Kühlkreise mit
+    physikalischen Komponentenmodellen; Temperaturregelung über
+    die Ventilstellung im LT-Pfad.
+    Parametrierung aus Theorie und Auslegungsdaten; Prüfung
+    stationärer Punkte sowie offener und geschlossener Verläufe
+    mit realen Prüfstandsdaten.
+    Grenze: LT-Eintrittstemperatur als konstant angenommen;
+    verbleibende Abweichungen am Ausgang des nachgebildeten
+    vorhandenen Reglers trotz guter Wiedergabe der Ladelufttemperatur.
+    Anschluss: Systemgrenze, Aktuator-/Sensorpfad und getrennte
+    Prüfung von Temperatur und Stellsignal
+    \cite[S.~12, 44--47, 96--100 und 138--140]{rupprechtAnalysisSimulationOptimisation2016}.
+  \item \textbf{Reduzierte Kühlerdynamik.}
+    Vagapov et al.: Hammerstein-Modell aus nichtlinearer
+    stationärer Kühlerbeschreibung und linearer Dynamik,
+    geprüft mit Prüfstands- und Fahrzeugmessungen.
+    Serielle beziehungsweise parallele \emph{virtuelle} Wärmeübertrager
+    berücksichtigen den Wärmeverlust an die Umgebung.
+    Übertragbarer Baustein: Trennung von Statik und Dynamik,
+    Ordnungsreduktion anhand der Beiträge zur Kühlerantwort.
+    Grenze: Modellvorhersage, kein geschlossener Reglernachweis;
+    eigene HT/LT-Anordnung, dominierende Speicher und Parameter
+    gesondert begründen
+    \cite[Abschn.~2--5]{vagapovDynamicModelTemperature2022}.
+  \item \textbf{Prädiktive Ladelufttemperaturregelung im Fahrzeug.}
+    Vagapov: äußere prädiktive Stufe für die Lufttemperatur nach dem
+    Kühler; Vorgaben für Kühlmittelmassenstrom und -eintrittstemperatur,
+    Umsetzung über Pumpe und Ventil.
+    Die vollständige Kaskade erfüllt die geforderte Rechenzeit nicht;
+    Fahrzeugversuche mit einer vereinfachten inneren modellbasierten
+    Steuerung und verbleibender äußerer prädiktiver Stufe.
+    Regelgüte dort nur grob untersucht, Gewichte und Nebenbedingungen
+    beispielhaft gewählt.
+    Anschluss: Modellgröße, Optimierungsaufwand und Reglerstruktur
+    zusammen bewerten; Fahrversuch als Umsetzungsbeleg mit diesen
+    Grenzen und den Anlagenunterschieden zum Großmotor
+    \cite[Abschn.~9.1 und 9.4, insbesondere S.~137--140]{vagapovModellierungIdentifikationUnd2024}.
+  \item \textbf{Kühler als Teil eines Gesamtmotormodells.}
+    Sui et al.: stationäre Kühlerbeschreibung über Effektivität,
+    Luftmassenstrom und Eintrittstemperaturen innerhalb eines
+    Marine-Mittelwertmodells.
+    Motorvalidierung anhand quasi-stationärer Prüfstandsdaten;
+    kein isolierter dynamischer Nachweis des Kühlerbausteins.
+    Anschluss: thermische Struktur der Eingangsmerkmale;
+    dynamische Ventilverstärkung der eigenen Strecke zusätzlich prüfen
+    \cite[Abschn.~4.1; Anhang~B.2, Gl.~(B.6)--(B.10)]{suiMeanValueFirst2022}.
+\end{itemize}
+
+\begin{itemize}
+  \item \textbf{SINDy und NMPC.}
+    Yahagi et al. modellieren Ladedruck und AGR-Rate mit einem
+    diskreten spärlichen Dynamikmodell und untersuchen darauf
+    aufbauend nichtlineare modellprädiktive Regelung.
+    Stellgrößen: Turbinengeometrie und AGR-Ventil;
+    Drehzahl und Einspritzmenge als weitere Eingänge.
+    Identifikation und Reglervergleich am simulierten
+    Mean-Value-Motormodell
+    \cite[Abschn.~3 und 5]{yahagiSparseIdentificationNonlinear2025}.
+  \item \textbf{Koopman-Prädiktion mit realen geregelten Messdaten.}
+    Yahagi et al. verwenden Ein-/Ausgangshistorien und eine
+    verallgemeinerte bilineare Koopman-Rekursion.
+    Zusätzlich zur Simulation: Motorprüfstandsdaten unter
+    Serien-PID-Regelung; betrachtete Ausgänge dort Ladedruck und
+    Luftmassenstrom. Nachweis der Modellvorhersage;
+    Entwicklung eines Koopman-Reglers als nächste Aufgabe.
+    Quellenstand: arXiv-Preprint vom Februar 2026
+    \cite[Abschn.~III, V und VI]{yahagiGeneralizedBilinearKoopman2026}.
+  \item \textbf{Übertragbare methodische Frage.}
+    In beiden Arbeiten: kompakte Dynamikmodelle für einen angeregten
+    Motorluftpfad. Für diese Arbeit zusätzlich zu prüfen:
+    Temperaturvorhersage und thermischer Ventilpfad.
+    Die bilineare Koopman-Struktur zudem von der eigenen affinen
+    Rekursion unterscheiden; eine günstigere Vorhersage in einer
+    anderen Anlage ist keine allgemeine Rangfolge der Modellklassen.
+    Bezug zu Abschnitt~\ref{ssec.sot.edmd.def}.
+\end{itemize}
+% COPILOT-ZUSATZ ENDE ch3-15
+\section{Einordnung und Abgrenzung der Arbeit}
+\label{sec.sot.einordnung}
+
+
+Aus dem vorstehenden Überblick folgt: Eine Arbeit, die die
+Ladelufttemperatur eines Großmotors für eine prädiktive Regelung
+modelliert, findet sich in der gesichteten Literatur nicht. Die
+einzelnen Bausteine sind dagegen vielfach behandelt.
+
+Die dynamische Modellierung der Ladelufttemperatur von
+Verbrennungsmotoren ist Teil vieler vorangehender Arbeiten, steht dort
+aber selten im Fokus. Hervorzuheben ist
+\cite{vagapovDynamicModelTemperature2022}, weil dort die
+Ladelufttemperatur explizit behandelt wird und der Aktor wie im
+vorliegenden Fall ein Dreiwegeventil ist.
+
+Zur Anwendung von \sindyc{} und eDMDc existieren trotz der relativen
+Neuheit von \sindy{} viele Arbeiten; nur wenige befassen sich mit
+Verbrennungsmotoren \cite{yahagiSparseIdentificationNonlinear2025}. In
+den in Abschnitt~\ref{sec.sot.application} gesichteten Arbeiten stammen
+die Messdaten fast immer aus Simulationen. Eine Ausnahme mit
+echten Messungen an einem Industriesystem ist
+\cite{yahagiGeneralizedBilinearKoopman2026}. Für die hier verfolgte
+Frage ist dieser Weg zirkulär, weil ein aus einem Modell gewonnenes
+Modell die Güte seiner Quelle nicht übertreffen kann; die vorliegende
+Arbeit arbeitet deshalb auf Messdaten (Kapitel~\ref{ch.datenbasis}).
+
+Zur prädiktiven Regelung liegen viele Arbeiten vor, darunter
+Anwendungen, in denen eine Temperatur geregelt wird, etwa
+\cite{kelmanBilinearModelPredictive2011} für eine Gebäudeklimaanlage.
+Die Ladelufttemperatur von Verbrennungsmotoren behandelt keine davon.
+
+
+Vom rein physikalischen Modellieren grenzt sich die Arbeit klar ab.
+Untersucht wird, wie sich mit \sindy{} und \edmd{} schnell und ohne
+vollständige First-Principles-Parametrierung ein Regelmodell erstellen
+lässt; die Physik geht als Auswahl der Bibliothek ein, nicht als fertig
+parametriertes Modell.
+
+Neuronale Netze (RNN, LSTM, NeuralODE, Transformer) sind eine
+naheliegende dritte Familie für die nichtlineare Modellierung von
+Zeitreihen. Sie werden in dieser Arbeit bewusst nicht als
+Vergleichskandidaten aufgenommen, weil:
+
+\begin{itemize}
+  \item \textbf{Interpretierbarkeit.} Eine zentrale Anforderung dieser
+    Arbeit ist die Lesbarkeit des identifizierten Modells in Termen
+    physikalischer Größen, was Black-Box-NN nicht erfüllen.
+  \item \textbf{Übertragbarkeit.} Die Übertragung trainierter NN zwischen
+    Motorbaureihen würde aufwendiges Transfer-Lernen erfordern.
+    Sparse-symbolische Modelle erlauben dagegen einen direkten
+    Strukturvergleich.
+\end{itemize}
+
+% COPILOT-ZUSATZ BEGIN ch3-16
+\par\smallskip
+\noindent\textbf{Copilot: Ergänzende Stichpunkte und Prüfhinweise}
+\par\smallskip
+% COPILOT-STICHPUNKTE (09.09.2026; Literaturvertiefung; Kapitelort: Synthese)
+% Eigene Ableitung aus den einzeln geprüften Arbeiten des vorigen Abschnitts.
+% Modellrollen: 2026-09-08_Argumentation_Belege/MODELLE_VERSTEHEN.md:9-23,37-70,103-172.
+% Vergleichsgrenzen: VERTRAG_279.md:3-12; METHODIK_VERGLEICH_20260908.md:28-48.
+\begin{itemize}
+  \item \textbf{Anwendungsbezogene Forschungsfrage:}
+    Welche kompakte Modellstruktur beschreibt aus den verfügbaren
+    Großmotor-Messdaten sowohl $T_{\mathrm{eng,in}}$ als auch die
+    Wirkung des LT-Ventils über den vorgesehenen Regelhorizont?
+    Physikalische Struktur, sparsame Parametrierung und geliftete
+    Vorhersage als miteinander zu prüfende Möglichkeiten.
+  \item \textbf{Anschluss an die Literatur:}
+    Systemgrenze aus der Kühlkreismodellierung, stationäre
+    Wärmeübertragung und reduzierte Speicherwirkung aus der
+    thermischen Modellierung, rekursive Bewertung aus den
+    datengetriebenen Luftpfadarbeiten.
+    Der eigene Beitrag liegt in ihrer nachvollziehbaren Umsetzung
+    und Prüfung für die konkrete Temperaturregelstrecke.
+  \item \textbf{Getrennte Nachweise:}
+    Parameterschätzung, Auswahl auf Entwicklungsdaten, unabhängige
+    Modellbewertung und simulativer Reglervergleich.
+    Retrospektive Vergleiche bereits bekannter Modellfassungen
+    entsprechend kennzeichnen. Aufgezeichnete zukünftige
+    Störgrößen bei Offline-Prognosen sind eine eigene
+    Informationsannahme.
+  \item \textbf{Reichweite:}
+    explizite Terme und überschaubare Modellstrukturen als
+    Entwurfsanforderung; Genauigkeit, Stellwirkung, Robustheit und
+    Übertragbarkeit als Ergebnisse der jeweiligen Prüfung.
+    Keine generelle Überlegenheit gegenüber neuronalen Verfahren
+    und kein Nachweis der Nichtexistenz anderer passender Arbeiten
+    aus dem begrenzten Literaturvergleich.
+\end{itemize}
+% COPILOT-ZUSATZ ENDE ch3-16

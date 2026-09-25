@@ -1,0 +1,1113 @@
+%%
+%% Kapitel 2 -- Grundlagen
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Grundlagen}
+\label{ch.grundlagen}
+
+Die Kühlung der verdichteten Ladeluft erhöht deren Dichte und damit die
+Ladungsmasse im Zylinder. Sie ist der konstruktiv einfachste Weg zu
+höherer Leistung. Über die Ladungsmasse hinaus senkt sie das
+Prozesstemperaturniveau insgesamt, was die thermische Belastung der
+Bauteile verringert
+\cite[S.~358]{merkerGrundlagenVerbrennungsmotorenSimulation2009}.
+
+Wie weit die Kühlung nötig ist, hängt vom Brennverfahren ab. Beim
+Dieselmotor dient sie der Ladungsmasse und der Emissionsminderung. Beim
+aufgeladenen Otto- oder Gasmotor ist sie zur Vermeidung des Klopfens und
+für eine günstige Schwerpunktlage der Verbrennung prinzipiell notwendig
+\cite[S.~358\,f.]{merkerGrundlagenVerbrennungsmotorenSimulation2009}.
+Eine niedrigere Ladelufttemperatur verschiebt die Verbrennung von der
+Klopfgrenze weg. Der gewonnene Abstand ist als höheres Druckverhältnis,
+höheres Verdichtungsverhältnis oder als frühere Zündung nutzbar. Am
+Motor dieser Arbeit ist die Aufteilung unmittelbar sichtbar: im
+Dieselbetrieb steht das Regelventil offen, geregelt wird allein im
+Gasbetrieb (Abschnitt~\ref{ChATCo}).
+
+Bild~\ref{fig.grundlagen.spirale} zeigt, wie sich eine Abweichung der
+Ladelufttemperatur fortpflanzt. Eine erhöhte Temperatur nach dem Kühler
+steigert die Klopfneigung, worauf die Motorsteuerung den Zündzeitpunkt
+zurücknimmt. Dadurch steigt die Turbineneintrittstemperatur, und bei
+Erreichen des kritischen Werts muss die Leistung zurückgenommen werden.
+Zugleich sinkt mit dem späten Zündzeitpunkt das Drehmoment. Ausgeglichen
+wird es über einen höheren Ladedruck, der Abgasgegendruck und
+Restgasanteil anhebt, womit die Kette von vorn beginnt
+\cite[S.~359\,f.]{merkerGrundlagenVerbrennungsmotorenSimulation2009}.
+Für den Magerbetrieb des Großmotors entfällt die Anreicherung des
+Gemischs als Schutzreaktion; an ihre Stelle tritt die Rücknahme der
+Leistung. Das Werk beziffert sie: ab $55\,^\circ$C beginnt
+ein Derating, das bei $70\,^\circ$C $-30\,\%$ erreicht
+\cite[S.~58]{everllencese4960DFProject2026}.
+
+\begin{figure}[htb]
+  \centering
+  \begin{tikzpicture}[
+      knoten/.style={
+        draw=abbGrau, line width=0.5pt, rounded corners=2pt,
+        fill=white, align=center, inner sep=4pt,
+        text width=26mm, minimum height=11mm,
+        font=\sffamily\footnotesize, text=abbGrau},
+      zustand/.style={
+        knoten, draw=abbBlau, line width=1.1pt, text=abbBlau,
+        fill=abbBlau!6},
+      folge/.style={
+        knoten, draw=abbHell, text=abbHell},
+      pfeil/.style={
+        -{Stealth[length=2.2mm,width=1.6mm]}, draw=abbGrau, line width=0.7pt},
+      pfeilhell/.style={
+        -{Stealth[length=2.2mm,width=1.6mm]}, draw=abbHell, line width=0.6pt}
+    ]
+    \node[zustand] (temp)   at (  90:38mm) {Ladelufttemperatur\\steigt};
+    \node[knoten]  (klopf)  at (  18:38mm) {Klopfneigung\\steigt};
+    \node[knoten]  (zuend)  at ( -54:38mm) {Zündung wird nach\\spät verstellt};
+    \node[knoten]  (moment) at (-126:38mm) {Drehmoment\\sinkt};
+    \node[knoten]  (druck)  at ( 162:38mm) {Ladedruck und\\Restgasanteil steigen};
+    \node[folge]   (turbo)  at (64mm,-31mm) {Turbineneintritts-\\temperatur steigt};
+    \node[folge]   (derate) at (64mm,-53mm) {Leistung wird\\zurückgenommen};
+    \draw[-{Stealth[length=2.0mm,width=1.4mm]}, draw=abbHell!55,
+          line width=0.6pt]
+      (135:17mm) arc[start angle=135, end angle=-155, radius=17mm];
+    \draw[pfeil] (temp)   to[bend right=20] (klopf);
+    \draw[pfeil] (klopf)  to[bend right=20] (zuend);
+    \draw[pfeil] (zuend)  to[bend right=20] (moment);
+    \draw[pfeil] (moment) to[bend right=20] (druck);
+    \draw[pfeil] (druck)  to[bend right=20] (temp);
+    \draw[pfeilhell] (zuend) -- (turbo);
+    \draw[pfeilhell] (turbo) -- (derate);
+  \end{tikzpicture}
+  \caption{Wirkungskette einer erhöhten Ladelufttemperatur im
+    Gasbetrieb. Nach \cite[Bild~8-39,
+    S.~359]{merkerGrundlagenVerbrennungsmotorenSimulation2009},
+    angepasst für den Magerbetrieb.}
+  \label{fig.grundlagen.spirale}
+\end{figure}
+
+Aus dieser Kette allein folgte, dass eine möglichst kalte Ladeluft
+günstig ist. Nach unten begrenzen jedoch zwei Vorgänge, die mit dem
+Klopfen nichts zu tun haben. Unterhalb des Taupunkts fällt im Kühler
+Wasser aus und gelangt in den Zylinder; der Projektguide rechnet für
+$9\,000\,$kW bei $35\,^\circ$C und $80\,\%$ relativer Feuchte mit
+$248\,$kg/h Kondensat
+\cite[S.~333--334]{everllencese4960DFProject2026}. Unter
+Tropenbedingungen und $3\,$bar Ladedruck liegt der Taupunkt bei rund
+$51{,}5\,^\circ$C
+\cite[S.~266\,f.]{pucherLadeluftkuehlungUndLadeluftkuehler2012}. Bei
+niedriger Last kommt die Verbrennungsstabilität hinzu. Eine kalte Ladung
+verlängert den Zündverzug, und im mageren Gasbetrieb steigt der Anteil
+unverbrannten Methans im Abgas
+\cite[S.~811--850]{almbauerThermomanagement2019}. Das Werk zieht daraus
+eine Freigabegrenze: unter $10\,\%$ Last ist Gasbetrieb nur zulässig,
+wenn die Ladelufttemperatur mindestens $50\,^\circ$C erreicht
+\cite[S.~79]{everllencese4960DFProject2026}. In der Gegenrichtung wächst
+mit der Ladelufttemperatur die Stickoxidbildung
+\cite[S.~277]{merkerGrundlagenVerbrennungsmotorenSimulation2009}. Der
+Sollwert liegt deshalb im Inneren eines Bandes und nicht an dessen Rand.
+
+Die Werksdokumentation fasst beide Richtungen in Grenzwerte.
+Für den 49/60DF ist am Zylindereintritt ein Band von $50$ bis
+$60\,^\circ$C zulässig \cite[S.~162]{everllencese4960DFProject2026}.
+Es beschreibt das Regelziel im Gasbetrieb; im Dieselbetrieb arbeitet
+keine Sollwertregelung, und die Temperatur läuft mit der Last
+(Abschnitt~\ref{ChATCo}). Die Bandkante $50\,^\circ$C ist die absolute
+Betriebsgrenze, der Taupunkt des Tropen-Auslegungsfalls liegt darüber.
+Das erklärt, warum der Sollwert im oberen Teil des Bandes geführt wird
+(Abschnitt~\ref{ChATCo}). Die genannten Zahlen gelten für den 49/60DF;
+Aufbau und Wirkmechanismen übertragen sich auf die Feldbaureihen, die
+Bänder nicht (Kapitel~\ref{ch.datenbasis}). Die Untergrenze
+kehrt in Kapitel~\ref{ch.ergebnisse} als weiche Ausgangsbeschränkung des
+modellprädiktiven Reglers wieder, die Obergrenze begründet das enge
+Sollwertband.
+% PRÜFEN (Lektor C5): ch4 zitiert das Band mit "PG 49/60 Marine S. 133
+% Tab. 73" — das ist die Diesel-Ausgabe (everllencese4960Project2025);
+% hier die DF-Marine-Ausgabe S. 162 Tab. 90. Beide können stimmen, ch4
+% sollte denselben Key nutzen.
+% PRÜFEN: 51/60DF-Feldflotte hat ein anderes Band (PG 51/60DF-M S. 117
+% Tab. 74: 40-70 °C), gehört nach Kap. 4/6.4; Key fehlt noch in Masterarbeit.bib.
+
+
+Wie tief gekühlt werden kann, begrenzt das Kühlmedium. Die Ladeluft
+erreicht bestenfalls dessen Eintrittstemperatur; darüber hinaus
+bestimmen Übertragungsfläche und Kühlmittelmassenstrom das Ergebnis
+\cite[S.~360]{merkerGrundlagenVerbrennungsmotorenSimulation2009}. Für
+Schiffs- und Stationäranlagen steht mit dem Seewasser ein kaltes Medium
+in großer Menge bereit, während Fahrzeuge auf Umgebungsluft oder
+Motorkühlwasser angewiesen sind. Daraus folgt der wassergekühlte Aufbau
+des hier betrachteten Ladeluftkühlers. Die Differenz zwischen
+Verdichteraustritt und Kühlwassereintritt bleibt für die Modellbildung
+maßgeblich; Abschnitt~\ref{ssec.grundlagen.luftpfad.kennzahlen} führt
+sie als Kühlerspanne ein.
+
+Aufladung und Ladeluftkühlung wirken auf dieselbe Größe, die Dichte der
+Zylinderladung. Der Kühler gehört deshalb zum Aufladesystem, dessen
+Aufbau der folgende Abschnitt beschreibt.
+
+
+\section{Ladeluftsystem}
+
+Bild~\ref{fig.grundlagen.ladeluftsystem} zeigt den Aufbau des Ladeluftsystems eines zweistufig aufgeladenen Motors.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.85\textwidth]{ladeluftsystem_zweistufig_51_60df}
+  \caption{Ladeluftsystem bei zweistufiger Aufladung mit LP- und HP-Verdichter, rote Systemgrenze kennzeichnet einstufige Aufladung}
+  \label{fig.grundlagen.ladeluftsystem}
+\end{figure}
+
+Beim 49/60DF wird die Ansaugluft zunächst in der Niederdruckstufe (LP)
+verdichtet und im LP-Ladeluftkühler gekühlt. Es wird nicht auf die Endtemperatur gekühlt, sondern nur ausreichend, um Kondensat zu vermeiden und so den folgenden HP-Verdichter vor Beschädigung durch Tröpfchen zu schützen. In der anschließenden Hochdruckstufe (HP) wird
+die Ladeluft ein zweites Mal verdichtet und im HP-Kühler auf die Endtemperatur
+gebracht.
+
+Die angesaugte Luft wird im Verdichter des Turboladers auf Ladedruck gebracht,
+um die Luftdichte und damit die Sauerstoffmasse im Zylinder zu erhöhen. Aufgrund der
+näherungsweise isentropen Verdichtung steigt die Ladelufttemperatur dabei
+deutlich an und muss im Ladeluftkühler wieder abgesenkt werden. Das Abgas aus den
+Zylindern treibt die Turbine im Abgasstrang an. Die genaue Turbinenleistung wird über die verstellbare Turbinenfläche eingestellt. Turbine und Verdichter sitzen auf einer gemeinsamen Welle; über sie wird der Verdichter angetrieben.
+
+Der Katalysator zur selektiven katalytischen Reduktion (SCR) wirkt, anders
+als eine Abgasrückführung, nicht auf die Ladelufttemperatur. Er und die im
+Betrieb überwiegend inaktiven Bypässe bleiben im Weiteren unberücksichtigt.
+
+Die zweistufige Aufladung lässt sich durch die rote Systemgrenze auf das System einer einstufigen Aufladung reduzieren. Auch aktuell wird die eigentliche Ladelufttemperatur nur über die HP-Stufe eingestellt.
+
+\subsection{Kühlkreise}
+
+\label{ssec.grundlagen.luftpfad.cabv}
+
+Der Ladeluftkühler ist zweistufig aufgebaut. Die Ladeluft durchströmt zuerst das
+Bündel des Hochtemperatur-Kühlkreises (HT, Kühlmedium HTCW) und anschließend das
+Bündel des Niedertemperatur-Kühlkreises (LT, Kühlmedium LTCW), das die
+Austrittstemperatur bestimmt. Bild~\ref{fig.grundlagen.kuelkreise} zeigt beide
+Kreise mit ihren Verbrauchern.  
+
+\emph{Stufe} bezeichnet im Folgenden stets die Aufladestufe (LP/HP),
+\emph{Bündel} die HT- beziehungsweise LT-Seite innerhalb eines Kühlers.
+% (Copilot 01.09.: Konventionssatz von Kommentar auf Fließtext gehoben,
+% die Sachprüfung vom 27.08. hatte genau diese Konvention bestätigt.)
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.85\textwidth]{kuelkreise}
+  \caption{HT- und LT-Kühlkreise}
+  \label{fig.grundlagen.kuelkreise}
+\end{figure}
+
+% ===== NEUFASSUNG Copilot 01.09.2026 (Fragmente Werksangabe/Sollwert
+% ===== integriert; Altfassung entfernt 03.09., s. ch2.tex.bak_pre_4d0309) =====
+Der HT-Kreis hält primär Zylinderköpfe und Laufbuchsen auf
+Betriebstemperatur. Seine Vorlauftemperatur wird über ein Dreiwegeventil
+eingeregelt, das den Durchfluss durch den HT/LT-Kühler einstellt;
+dieser ist mit dem kälteren LT-Kreis verbunden und führt die Wärme
+dorthin ab. Die Pumpe des HT-Kreises wird vom Motor angetrieben, der
+Volumenstrom ist damit an die Drehzahl gekoppelt. Nach der Pumpe
+durchströmt das HTCW das HT-Bündel der Ladeluftkühlung und anschließend
+die Zylinderkühlung. Für den Start nach Stillstand liegt ein Vorwärmer
+im Kreis. Wegen des Vorwärmers, der großen Wassermasse und der Lage des
+HT-Bündels vor dem Motor als größtem Wärmeerzeuger schwankt die
+Temperatur dieses Kreises im Betrieb wenig; wenn, dann kurzfristig als
+Folge einer Lasterhöhung \cite{everllencese4960DFProject2025}.
+
+Die Vorlauftemperatur des LT-Kreises wird ebenfalls über ein Ventil
+geregelt, das den Durchfluss durch einen Kühler einstellt. Dieser
+Wärmeübertrager wird von einer externen Kühlwasserquelle durchflossen,
+in marinen Anwendungen vom Seewasser. Die niedrigste erreichbare
+Kühlwassertemperatur hängt damit von den Umgebungsbedingungen ab
+(Werksangabe $32\,^\circ$C, Betriebsband $25$ bis $38\,^\circ$C)
+\cite{everllencese4960DFProject2025}. Das Temperaturniveau folgt der
+Umgebung; Last und Ventilhub verschieben es leicht
+(Abschnitt~\ref{sec.erg.ol}). Nach der Kühlung durchfließt das LTCW das
+LT-Bündel der Ladeluftkühlung und anschließend weitere Kühlstellen,
+darunter den HT/LT-Kühler, den Schmiermittelkühler und den Düsenkühler.
+
+
+
+\subsection{Ladelufttemperaturregelung}
+\label{ChATCo}
+% ===== NEUFASSUNG Copilot 01.09.2026 (Altfassungen entfernt 03.09.,
+% ===== s. ch2.tex.bak_pre_4d0309) =====
+Die Ladelufttemperatur wird in der Serie durch die
+Charge-Air-Temperature-Control (ChATCo) geregelt. Ihr Sollwert ist
+keine feste Zahl: Die Werksdokumentation führt ihn abhängig vom
+Betriebspunkt, von der Kraftstoffart, von Umgebungs- und
+Medientemperaturen und vom Optimierungsziel
+\cite[S.~51]{everllencese4960DFProject2026}; unterhalb einer
+Ansauglufttemperatur-Schwelle bleibt er konstant, darüber wird er
+mitgeführt \cite[S.~376]{everllencese4960DFProject2026}. Für die
+Regleruntersuchungen dieser Arbeit sind $52\,^\circ$C festgelegt
+(Kapitel~\ref{ch.datenbasis}); der Wert liegt innerhalb des zu
+Kapitelbeginn genannten Bandes. Bild~\ref{fig.grundlagen.chatco} zeigt
+die Struktur der Serienregelung.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.85\textwidth]{ChAtco}
+  \caption{Aktuell verbaute Ladelufttemperaturregelung}
+  \label{fig.grundlagen.chatco}
+\end{figure}
+
+Der Wasserdurchsatz durch das LT-Bündel des HP-Kühlers wird durch ein
+elektrisch angesteuertes Dreiwegeventil eingestellt
+\cite{everllenceseTemperaturregelventilMitAnbau2025}.
+% ===== ERGÄNZT Copilot 01.09.2026 (Ventil-/Reglerstruktur, Fassung n. Lektor) =====
+Die Anlage besitzt zwei baugleiche Mischventile mit linearer Kennlinie,
+eines je Kühlstufe (nach dem LP- und nach dem HP-Kühler), jeweils mit
+Positions-Sollwert und Positionsrückmeldung
+\cite[S.~274--275]{everllencese4960DFProject2026}; maßgeblich für die
+Temperatur vor Zylinder ist das HP-seitige Ventil, dessen Stellung im
+Folgenden mit $\valveCA$ bezeichnet wird. Je Ventil arbeitet
+ein Regler mit PI-Charakteristik und Zusatzeingängen, darunter die
+Umgebungslufttemperatur (Messstelle 1TE6000)
+\cite[S.~263]{everllencese4960DFProject2026}; der
+Temperatursensor sitzt stromab des Ventils
+\cite[S.~237]{everllencese4960DFProject2025}. Die Rohrstrecke zwischen
+Mischventil und Kühlereintritt gilt in der Werksauslegung als
+totzeitkritisch \cite[S.~381]{everllencese4960DFProject2026}; die
+endliche Stellgeschwindigkeit des Antriebs wirkt auf die Regelung als
+Ratenbegrenzung, eine Totzeit entsteht am Antrieb nur beim
+Richtungswechsel (Kapitel~\ref{ch.datenbasis}). Aktiv angesteuert
+wird das Ventil nur im Gasbetrieb; dort wird die Ladelufttemperatur auf
+den Sollwert eingeregelt. Der Regler besteht aus einer adaptiven
+Vorsteuerung und einem PI-Anteil. Die Vorsteuerung basiert auf einem
+Kennfeld über der relativen Motorleistung und der Differenz zwischen
+Ladeluft-Sollwert und LTCW-Temperatur; bei stationärer Last wird das
+Kennfeld so nachgeführt, dass der PI-Anteil gegen null geht. Der Regler
+arbeitet im Takt von $500\,$ms, der Stellbereich ist auf $0$ bis
+$100\,\%$ begrenzt, und ein Anti-Windup begrenzt den Integrator an den
+Stellgrenzen. Zwischen Reglerausgang und Ventilposition liegt eine
+hinterlegte Linearisierungskurve, die die nichtlineare Kennlinie des
+Stellkanals ausgleichen soll; die Ventilkennlinie selbst ist je Pfad
+nahezu linear, die S-Form der Streckenverstärkung entsteht in Hydraulik
+und Kühler (gemessen: Abschnitt~\ref{ssec.erg.ol.kennlinie}).
+% Quelle der Kennlinienaussage: Clorius G3FM je Pfad "almost linear",
+% RPC-Positionierer linear; die S-Form sitzt in Hydraulik und Kühlerphysik.
+% Hardware-Details und die Stellraten gehören nach Kap. 4, s.
+% notizen\CH2_VORSCHLAEGE_OFFEN_0309.md.
+
+
+In der Steuerung sind mehrere Betriebsarten hinterlegt. Im
+Dieselbetrieb steht das Ventil $100\,\%$ offen, es wird maximal
+gekühlt. HT/LT-Switchover-Preheating (der LT-Kühler wird vom LT- an
+den HT-Kreis gehängt) und LT-Preheating (Ventil zu) sind weitere
+Betriebsarten mit eigener Dynamik. Sie werden im Weiteren nicht
+betrachtet, müssen aber bekannt sein, damit Datenabschnitte
+verschiedener Betriebsarten nicht vermischt werden.
+
+Da diese Regelung bei allen Motoren aktiv ist, liegt in allen historischen Messdaten bei der Identifikation ein Closed-Loop-Identifiaktion Problem vor. Dies wird in \ref{closed_loop_identifkation} erläutert.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%-------------------------------------------
+% Wärmeübertragung im Ladeluftkühler
+%%%%%%%%%%%%%%%%%%%%%%%%%%%-------------------------------------------
+
+
+\section{Wärmeübertragung im Ladeluftkühler}
+\label{ssec.grundlagen.luftpfad.waermeuebertragung}
+\label{ssec.grundlagen.luftpfad.kennzahlen}
+\label{ssec.grundlagen.terme.literatur}
+
+% COPILOT-STICHPUNKTE BEGIN Herleitungsweg-20260922
+% Copilot: auf Thomas' Wunsch vom 22.09.2026 auf die einfache Grundherleitung verdichtet.
+% Gepruefter Modellanschluss, keine neue Modellwahl:
+% 05_Matlab_TB20/21_Modellstudien/02_Koordination_Modellaufbau/
+% MODELLAUSWAHL_20260922.md, Z. 10--18, 31--36 und 58--64:
+% vorgeschlagene Schreibrollen EB_E4_STANDARD/S1G_ORIGINAL und E6r/UE2.
+% EB21: Erklaerbare_Bibliothek_S1G/eb21_features.m, Z. 23--35:
+% dH=T_col_in-T_HTCW; d3=(T_HTCW-T_LTCW)+cFix*dH;
+% Tstat=T_col_in-PH*dH-P3*d3; gamma=1-exp(-rho*r*m).
+% EB_E4: rate_mode R1, also r=1. cFix ist nicht exakt 1-PH.
+% Die exakte Serienidentitaet unten motiviert diese Form, beweist keine
+% physikalische Identifikation der voneinander unabhaengigen Fitkoeffizienten.
+\par\smallskip
+\noindent\textbf{Copilot: Einfache Grundherleitung für die spätere Modellbildung}
+\par\smallskip
+\begin{enumerate}
+  \item \textbf{Wärmeabgabe der Luft.}
+    Der Luftmassenstrom $\dot m_L$ gibt die pro Zeit durchströmende
+    Luftmasse an. Die spezifische Wärmekapazität $c_{p,L}$ beschreibt,
+    wie stark sich die Enthalpie je Luftmasseneinheit mit der Temperatur
+    ändert. Bei konstantem $c_{p,L}$ ergibt sich im stationären Zustand
+    \begin{equation}
+      \label{eq.grundlagen.basic.luftleistung}
+      \dot Q_L=\dot m_L c_{p,L}(\Tin-\Tout).
+    \end{equation}
+    $\dot Q_L$: von der Luft abgegebene Wärmeleistung in $\mathrm{W}$.
+    Bei gleicher Abkühlung $\Tin-\Tout$ muss für einen größeren
+    Luftmassenstrom mehr Wärme abgeführt werden. Bei gleicher
+    Wärmeleistung fällt die Abkühlung entsprechend kleiner aus.
+    Voraussetzungen: gleicher Luftmassenstrom am Ein- und Austritt,
+    kein Phasenwechsel, vernachlässigbare Änderungen der kinetischen
+    und potenziellen Energie. Grundlage: Enthalpieänderung und erster
+    Hauptsatz nach \cite[S.~821, Gl.~31.5--31.6]{almbauerThermomanagement2019}.
+
+  \item \textbf{Wärmeübertragung zum Kühlwasser.}
+    Im Kühlfall fließt Wärme von der Luft zur Wand, durch die Wand und weiter
+    zum Wasser. Zusammengefasst gilt
+    \begin{equation}
+      \label{eq.grundlagen.basic.waermedurchgang}
+      \dot Q_{L\to W}=kA\,\Delta T_{L-W,\mathrm{mittel}}.
+    \end{equation}
+    $kA$: thermischer Leitwert in $\mathrm{W/K}$;
+    $\Delta T_{L-W,\mathrm{mittel}}$: zur räumlichen Beschreibung
+    passende mittlere Temperaturdifferenz zwischen Luft und Wasser.
+    Sie ist von der luftseitigen Abkühlung $\Tin-\Tout$ zu unterscheiden.
+    Die hintereinandergeschalteten Wärmeübergänge und die Wandleitung
+    bestimmen den Leitwert
+    \cite[S.~256, Gl.~12.3--12.7]{pucherLadeluftkuehlungUndLadeluftkuehler2012}.
+    Luft- und Wasserdurchsatz beeinflussen die Wärmeübergänge und damit
+    $kA$ \cite[S.~838--839, Gl.~31.59--31.62]{almbauerThermomanagement2019}.
+    Die Ventilstellung wirkt über den Wasserdurchsatz. Ihre Wirkung
+    auf die Kühlung muss deshalb nicht proportional zum Stellwert sein.
+
+  \item \textbf{Temperaturdifferenzen der HT- und LT-Stufe.}
+    Für die vereinfachte Reihenschaltung zunächst die Abkühlung in der
+    HT-Stufe beschreiben, anschließend die weitere Abkühlung in der
+    LT-Stufe:
+    \begin{equation}
+      \label{eq.grundlagen.basic.stufen}
+      \begin{aligned}
+        T_{\mathrm{zw}}&=\Tin-\varepsilon_{\mathrm{HT}}
+                                   (\Tin-\THT),\\
+        \Tstat&=T_{\mathrm{zw}}-\varepsilon_{\mathrm{LT}}
+                                   (T_{\mathrm{zw}}-\TLT).
+      \end{aligned}
+    \end{equation}
+    $T_{\mathrm{zw}}$: berechnete, ungemessene Lufttemperatur zwischen
+    den Stufen. $\Tstat$: berechnete stationäre Motoreintrittstemperatur
+    bei festgehaltenen Betriebsgrößen. Die dimensionslosen
+    Temperaturänderungsgrade $\varepsilon_{\mathrm{HT}}$ und
+    $\varepsilon_{\mathrm{LT}}$ beschreiben den jeweils abgebauten
+    Anteil der Temperaturdifferenz zur Wassereintrittstemperatur
+    \cite[S.~257, Gl.~12.8]{pucherLadeluftkuehlungUndLadeluftkuehler2012}.
+    Ihre Abhängigkeit von Durchsatz und Ventilstellung folgt aus dem
+    Wärmedurchgang; die konkrete Funktion bleibt zu bestimmen.
+    Bei wärmerem Kühlwasser kann eine Stufe die Luft auch erwärmen;
+    die entsprechende Luft-Wasser-Temperaturdifferenz wird dann negativ.
+    Durch Einsetzen der ersten Stufe ergibt sich für die zweite
+    \begin{equation}
+      \label{eq.grundlagen.basic.ltspanne}
+      T_{\mathrm{zw}}-\TLT
+       =(\THT-\TLT)+(1-\varepsilon_{\mathrm{HT}})(\Tin-\THT).
+    \end{equation}
+    Eigene Algebra: Die LT-Stufe sieht die nach der HT-Stufe verbleibende
+    Temperaturdifferenz. Damit sind genau die Kombinationen
+    $\Tin-\THT$ und $\THT-\TLT$ begründet, auf die sich die spätere
+    Modellierung beziehen kann. Die angenommene Stufenfolge und
+    Durchströmung sind Teil der Systemvereinfachung.
+
+  \item \textbf{Produkte aus Betriebspunktgrößen und Temperaturdifferenzen.}
+    Gl.~(\ref{eq.grundlagen.basic.luftleistung}) enthält unmittelbar
+    ein solches Produkt. In den Stufengleichungen steht stattdessen
+    ein durchsatzabhängiger Temperaturänderungsgrad vor einer
+    Temperaturdifferenz. Für seine datengetriebene Näherung kann
+    beispielsweise gelten
+    \begin{equation}
+      \label{eq.grundlagen.basic.produkte}
+      \begin{aligned}
+        \varepsilon(\mrel,\valveCA)\,\Delta T
+        &\approx
+        \bigl[a_0+a_1\mrel+a_2g(\valveCA)\bigr]\Delta T\\
+        &=a_0\Delta T+a_1\mrel\,\Delta T
+                         +a_2g(\valveCA)\,\Delta T.
+      \end{aligned}
+    \end{equation}
+    $\mrel$: dimensionsloser Luftmassenstromproxy aus den verfügbaren
+    Messgrößen; $g(\valveCA)$: dimensionslose Ventilfunktion;
+    $\Delta T$: jeweils die in Gl.~(\ref{eq.grundlagen.basic.stufen})
+    verwendete Temperaturdifferenz. Die Koeffizienten $a_i$ werden
+    aus Daten bestimmt. Wechselwirkungen können ergänzend durch
+    $\mrel\,g(\valveCA)\,\Delta T$ beschrieben werden.
+    Diese Zerlegung ist eine angebotene Modellnäherung. Die Physik
+    begründet die Produktstruktur, aber weder bestimmte Koeffizienten
+    noch eine zwingend lineare Massenstromabhängigkeit.
+    Konstante Faktoren lassen sich bei geeigneter Modellform in die
+    Koeffizienten aufnehmen. Die Wahl und Berechnung des Proxys wird
+    unten begründet; sie liefert keine kalibrierte Massenstrommessung.
+
+  \item \textbf{Verzögerte Temperaturantwort.}
+    Wand und Fluide speichern thermische Energie. Solange sich diese
+    Energie ändert, sind zugeführte und abgeführte Wärmeleistung
+    verschieden. Eine zusammengefasste Speicherkapazität motiviert
+    eine verzögerte Temperaturantwort
+    \cite[S.~830--831, Gl.~31.36--31.38]{almbauerThermomanagement2019},
+    \cite[S.~230, Gl.~4.6.14--4.6.16]{isermannEngineModelingControl2014}.
+    Eine einfache eigene Modellannahme lautet
+    \begin{equation}
+      \label{eq.grundlagen.basic.dynamik}
+      \frac{\mathrm d\Tout}{\mathrm dt}
+       =\lambda(\mrel,\valveCA)(\Tstat-\Tout),
+       \qquad \lambda>0.
+    \end{equation}
+    Die Temperatur nähert sich dem momentanen stationären Zielwert;
+    $\lambda$ bestimmt die Geschwindigkeit, bei festgehaltenen
+    Eingängen ist $\tau=1/\lambda$ die Zeitkonstante.
+    Ein größerer Luftmassenstrom verändert den Enthalpietransport
+    und kann deshalb auch diese Rate beeinflussen.
+    $\lambda=c_\lambda\mrel$ ist eine mögliche einfache Näherung.
+    Ein fehlender Ventilterm in der Rate ist eine Modellvereinfachung;
+    die Physik schließt seinen Einfluss nicht aus.
+
+  \item \textbf{Anschluss an die Modellierung.}
+    Die Herleitung liefert als gemeinsame Bausteine
+    Temperaturdifferenzen, betriebspunktabhängige Faktoren, deren
+    Produkte sowie einen thermischen Speicher.
+    Kapitel~\ref{ch.methodik} kann für die Kandidatenbibliothek auf
+    Gl.~(\ref{eq.grundlagen.basic.produkte}), für den stationären
+    Zielwert auf Gl.~(\ref{eq.grundlagen.basic.stufen}) und für die
+    Dynamik auf Gl.~(\ref{eq.grundlagen.basic.dynamik}) verweisen.
+    \sindyc und \edmdc können diese Bausteine unterschiedlich
+    verwenden; eine lokale Linearisierung begründet eine lineare
+    Vergleichsstruktur. Die nach Datenanpassung entstehenden
+    Gewichte sind nicht automatisch identifizierte physikalische
+    Stufenwirkungsgrade. Auswahl und Prüfung der konkreten Modelle
+    gehören nach Kapitel~\ref{ch.methodik} und \ref{ch.ergebnisse}.
+\end{enumerate}
+% COPILOT-STICHPUNKTE END Herleitungsweg-20260922
+
+% COPILOT-STICHPUNKTE BEGIN ch2-08
+\par\smallskip
+\noindent\textbf{Copilot: Stichpunkte zur Ausformulierung (16.09.2026)}
+\par\smallskip
+
+% ---- Absatz 1: Einordnung ----
+\begin{itemize}
+  \item Herleitung ist Vorwissen, kein gerechnetes Prozessmodell; sie legt fest,
+    welche Termfamilien in Kapitel~\ref{ch.methodik} zur Wahl stehen. Drei Ebenen
+    trennen: Literaturgleichung, eigene Reduktion, datengetriebene Auswahl
+    (Kapitel~\ref{ch.methodik} und \ref{ch.ergebnisse}). Ein physikalisch
+    plausibler Kandidat ist weder nachgewiesener Mechanismus noch automatisch
+    identifizierbar.
+  \item Rahmen: Mittelwertmodellierung des Luftpfads
+    \cite{guzzellaIntroductionModelingControl2010,
+    isermannEngineModelingControl2014}, auf Schiffsmotoren übertragen von
+    \cite{theotokatosCycleMeanValue2010} und
+    \cite{baldiDevelopmentCombinedMean2015}.
+  \item Systemgrenze: HP-Kühler mit HT- und LT-Bündel
+    (Abschnitt~\ref{ssec.grundlagen.luftpfad.cabv}). $\Tin$ wird gemessen; er
+    steigt mit Ladedruck und Last \cite[S.~769--780]{baarAufladeverfahren2019},
+    die Verdichterdynamik ist im Zeitbereich von $\Tout$ rasch ausgeregelt
+    \cite{theotokatosCycleMeanValue2010}. Deshalb keine Verdichter- oder
+    Turbinensimulation; ob $\Tin$ Eingang oder eigener Zustand ist, entscheidet
+    Kapitel~\ref{ch.methodik} am Transientenfehler.
+\end{itemize}
+
+% ---- Absatz 2: stationaere Bilanz ----
+% COPILOT-STICHPUNKTE BEGIN Systembilanz-20260922
+\begin{itemize}
+  \item \textbf{Copilot: Systemgrenze der folgenden Bilanz.}
+    Für beide HT-/LT-Stufen zusammen gilt stationär ohne Außenverlust
+    $\dot Q_L=\dot Q_{\mathrm{HT}}+\dot Q_{\mathrm{LT}}$.
+    Die Gleichsetzung in Gl.~(\ref{eq.energiebilanz}) mit nur dem
+    LT-Wasserstrom ist eine einstufige Ersatzbeschreibung.
+    Das Weglassen des unabhängigen HT-Beitrags ist eine zusätzliche
+    Modellvereinfachung; Grundlage sind die getrennten Stufenbilanzen.
+\end{itemize}
+% COPILOT-STICHPUNKTE END Systembilanz-20260922
+\begin{itemize}
+  \item Zuerst die übertragene Wärmeleistung, Gl.~(\ref{eq.energiebilanz}):
+    Luftseite, Wärmedurchgang und Wasserseite sind gleich. Annahmen: stationär,
+    keine Kondensation, adiabat nach außen, konstante Stoffwerte
+    \cite[S.~838, Gl.~31.57--31.59]{almbauerThermomanagement2019},
+    \cite[S.~256, Gl.~12.7]{pucherLadeluftkuehlungUndLadeluftkuehler2012}.
+  \item $\Delta T_{\log}$ gehört zur räumlichen Beschreibung und ist nicht
+    $\Tout - \TLT$. Die Gegenstromform ist idealisiert, die Bauform folgt nicht
+    aus ihr; für den unten genutzten Grenzfall $C_r \to 0$ ist die Stromführung
+    ohne Einfluss \cite[S.~3258 und 3264]{yinAnalyticModelTransient2003},
+    \cite[Gl.~31.64]{almbauerThermomanagement2019}.
+  \item $\TLT$ als gemessene Randbedingung führen, nicht als Konstante: der
+    geregelte LT-Vorlauf folgt Last und Ventilhub schwach
+    (Abschnitt~\ref{sec.erg.ol}). $\THT$ analog für das HT-Bündel.
+  \item Stationäre Bilanz und dynamische Wassererwärmung trennen; die Wasserseite
+    liefert hier nur die Randbedingung.
+\end{itemize}
+
+\begin{equation}
+  \label{eq.energiebilanz}
+  \dot m_L\,c_{p,L}\,(\Tin - \Tout)
+  \;=\; k\,A\,\Delta T_{\log}
+  \;=\; \dot m_W\,c_{p,W}\,(T_{\mathrm{LT,out}} - \TLT)
+\end{equation}
+
+% ---- Absatz 3: Kennzahlen und stationaerer Zielwert ----
+\begin{itemize}
+  \item Luftseitiger Temperaturänderungsgrad
+    $\varepsilon = (\Tin - \Tout)/(\Tin - \TLT)$
+    \cite[S.~257, Gl.~12.8]{pucherLadeluftkuehlungUndLadeluftkuehler2012}; als
+    Rekuperationsgrad bei Tschöke/Pucher 2018, S.~68, Gl.~41 (Key fehlt). Von der
+    Effektivität $\varepsilon_Q = \dot Q/[C_{\min}(\Tin - \TLT)]$ unterscheiden;
+    beide sind nur bei $C_{\min} = \dot m_L c_{p,L}$ gleich.
+  \item $\mathrm{NTU} = kA/C_{\min}$, $C_r = C_{\min}/C_{\max}$; Gegenstrom
+    $\varepsilon = [1 - e^{-\mathrm{NTU}(1-C_r)}]/[1 - C_r\,e^{-\mathrm{NTU}(1-C_r)}]$;
+    Anwendung am marinen Ladeluftkühler
+    \cite[Anhang~B.2, S.~25, Gl.~B.6--B.8]{suiMeanValueFirst2022}.
+  \item Grenzfall $C_r \to 0$: $\varepsilon = 1 - e^{-\mathrm{NTU}}$, unabhängig
+    von der Stromführung. Dass die Luftseite über den ganzen Ventilhub der
+    kleinere Kapazitätsstrom ist, ist eine Annahme; Beleg in
+    Abschnitt~\ref{sec.erg.ol}.
+  \item Stationärer Zielwert Gl.~(\ref{eq.Tout.stat}); die Differenz
+    $\Tin - \TLT$ wird als Kühlerspanne bezeichnet.
+    % Kein eigenes Formelzeichen: S ist in Abschnitt ssec.grundlagen.clid die
+    % Empfindlichkeitsfunktion.
+  \item Zwei Bündel hintereinander ergeben dieselbe Beziehung zweimal: HT-Bündel
+    mit $\THT$ auf die Zwischentemperatur $T_{\mathrm{zw}}$, LT-Bündel mit
+    $\TLT$ auf $\Tout$; nur das LT-Bündel trägt das Ventil. Eigene Reduktion,
+    Anschluss Pucher Gl.~12.8 je Bündel; Serienschaltung am 9L51/60DF bei
+    \cite[S.~89--90, Gl.~47]{rupprechtAnalysisSimulationOptimisation2016}. Bei
+    positiven NTU liegt der Zielwert zwischen $\Tin$, $\THT$ und $\TLT$.
+    Sensorlage und Bündelreihenfolge sind keine verifizierte Geometrie; das
+    steht als Grenze im Text.
+  \item Derselbe statische Kern steht in den Mittelwertmodellen
+    \cite[S.~204, Gl.~7.69]{erikssonModelingControlEngines2014},
+    \cite[S.~197, Gl.~23]{theotokatosCycleMeanValue2010},
+    \cite[S.~405, Gl.~6]{baldiDevelopmentCombinedMean2015},
+    \cite[S.~571, Gl.~8]{mrosekParameterEstimationPhysical2009}. Holmgren 2005,
+    Gl.~3.26 trägt einen Druckfehler (Plus statt Minus), beim Zitieren die
+    Minusform nennen (Key fehlt).
+\end{itemize}
+
+\begin{equation}
+  \label{eq.Tout.stat}
+  \Tout \;=\; \Tin - \varepsilon\,(\Tin - \TLT),
+  \qquad \varepsilon = 1 - e^{-\mathrm{NTU}} \quad \text{für } C_r \to 0
+\end{equation}
+\[
+  T_{\mathrm{zw}} = \THT + (\Tin - \THT)\,e^{-\mathrm{NTU}_{\mathrm{HT}}},
+  \qquad
+  \Tout = \TLT + (T_{\mathrm{zw}} - \TLT)\,e^{-\mathrm{NTU}_{\mathrm{LT}}(\valveCA)}
+\]
+
+% COPILOT-STICHPUNKTE BEGIN Raeumliche-Abkuehlung-20260922
+\begin{itemize}
+  \item \textbf{Copilot: Einordnung der weiterführenden NTU-Beziehung.}
+    Die oben verwendete Exponentialform entsteht aus der räumlichen
+    Bilanz, etwa
+    $C_L\,\mathrm dT/\mathrm da=-k(T-T_W)$ bei entlang der Fläche
+    konstantem $T_W$ \cite[S.~840, Gl.~31.64]{almbauerThermomanagement2019}.
+    Sie beschreibt noch keinen zeitlichen Speicher.
+    Beim Ersatz der Wand durch eine konstante Wassertemperatur
+    zusätzlich $C_W\gg C_L$ voraussetzen. $C_r\to0$ allein sagt
+    nicht, welche Seite den kleineren Wärmekapazitätsstrom hat.
+    Allgemein gilt für den luftseitigen Temperaturänderungsgrad
+    $\varepsilon=(C_{\min}/C_L)\varepsilon_Q$.
+\end{itemize}
+% COPILOT-STICHPUNKTE END Raeumliche-Abkuehlung-20260922
+
+% ---- Absatz 4: Waermedurchgang, Massenstrom, Stellkanal ----
+\begin{itemize}
+  \item Serienwiderstand Gl.~(\ref{eq.k.zusammensetzung}): Luftübergang,
+    Wandleitung, Wasserübergang
+    \cite[S.~256--257, Gl.~12.6]{pucherLadeluftkuehlungUndLadeluftkuehler2012},
+    \cite[S.~838, Gl.~31.59]{almbauerThermomanagement2019}; $\eta_f$ ist der
+    Oberflächenwirkungsgrad der berippten Luftseite. Dominanz aus den
+    Widerständen beurteilen (Rippenfläche), nicht allein aus
+    $\alpha_L < \alpha_W$.
+  \item Massenstromabhängigkeit: $\alpha \propto \dot m^{p}$; $p$ gehört zu einer
+    konkreten Korrelation mit Geometrie- und Reynolds-Gültigkeitsbereich,
+    turbulente Rohrströmung $p \approx 0{,}8$
+    \cite[S.~825--840]{almbauerThermomanagement2019}. Primärbeleg für variable
+    Koeffizienten am Ladeluftkühler
+    \cite[Abschn.~4.3, S.~8, Gl.~20--22]{vagapovDynamicModelTemperature2022}.
+    Pucher Gl.~12.7 belegt kein Potenzgesetz.
+  \item Bedingte eigene Folgerung: bei luftseitiger Dominanz
+    $kA \propto \dot m_L^{p}$ und $\mathrm{NTU} \propto \dot m_L^{p-1}$, also
+    fällt $\varepsilon$ mit dem Luftmassenstrom
+    \cite[S.~206]{erikssonModelingControlEngines2014},
+    \cite[Gl.~15]{theotokatosCycleMeanValue2010};
+    \cite[Gl.~B.8]{suiMeanValueFirst2022} setzt
+    $\mathrm{NTU} \propto \dot m^{-0{,}2}$. Der am Prüfstand angepasste Exponent
+    ist eine Fitgröße auf einem Massenproxy, kein Messwert des
+    Wärmeübergangsgesetzes (Abschnitt~\ref{sec.erg.ol}).
+  \item $\dot m_L$ wird am Großmotor nicht gemessen (Llamas 2019, S.~18, Key
+    fehlt). Ersatz: Last, Laderdrehzahl und Ladedruck über den Liefergrad
+    (Heywood, S.~54, Gl.~2.27a, Key prüfen) oder der Druckverlust über den
+    Kühler, $\Delta p \propto \dot m^{2}/\rho$, also
+    $\dot m \propto \sqrt{\Delta p\,p/T}$ (Beleg nachschlagen). Jeder Last- oder
+    Drehzahlterm ist damit ein Massenstromterm.
+  % COPILOT-STICHPUNKTE BEGIN Luftmassenstromproxy-20260922
+  % Kapitelort: 2.2, nach Massenstromabhaengigkeit, vor Stellkanal.
+  % Originalpunkt oben erhalten; die folgenden Punkte praezisieren ihn.
+  % Datenbeleg: 05_Matlab_TB20/10_Voranalyse/
+  % Luftmassenstrom_Waermeuebertragung/ERGEBNIS.md, Z. 145--168.
+  % Messstellen-Grenze: 05_Matlab_TB20/10_Voranalyse/
+  % Druckdifferenz/README.md, Z. 34--46.
+  \item \textbf{Copilot: Ergänzung zur Herleitung des Luftmassenstromproxys
+    (22.09.2026).} Präzisierung zum vorherigen Punkt: Last und Laderdrehzahl
+    können mit dem Luftmassenstrom zusammenhängen; ein entsprechender
+    Modellterm bildet diesen Zusammenhang nicht zwangsläufig ab. Für die
+    untersuchte Datenbasis einen direkt gemessenen Luftmassenstrom von
+    berechneten Referenzkanälen unterscheiden (Kapitel~\ref{ch.datenbasis}).
+    Gesucht: ein aus Messgrößen berechneter Ersatz für den relativen
+    Luftmassenstrom durch den HP-Kühler. Physikalischer Anschluss:
+    Wärmekapazitätsstrom $C_L=\dot m_L c_{p,L}$ in
+    Gl.~(\ref{eq.energiebilanz}) und massenstromabhängiger Wärmeübergang.
+  \item \textbf{Druckverlust als Ausgangspunkt.} Für eine feste Geometrie,
+    positive Strömungsrichtung und näherungsweise quasistationäre,
+    turbulente Durchströmung bei überwiegenden Reibungsverlusten:
+    quadratischer Verlustansatz mit einer
+    repräsentativen Dichte $\rho_L$. Druckverlustbeiwert $\zeta_L$ fasst die
+    Strömungswiderstände zusammen; seine näherungsweise Konstanz im
+    betrachteten Bereich ist eine zusätzliche Annahme
+    \cite[Abschnitte \emph{Momentum Balance} und \emph{Friction}]{mathworksHeatExchangerInterfaceG}.
+    Eigene Zusammenfassung und algebraische Umstellung mit der
+    Strömungsfläche $A_{\mathrm{Str}}$ und der Geschwindigkeit $v_L$:
+    \begin{equation}
+      \label{eq.luftproxy.druckverlust}
+      \begin{aligned}
+        \dpHP &\approx \frac{\zeta_L}{2}\rho_L v_L^2,
+        \qquad \dot m_L=\rho_L A_{\mathrm{Str}}v_L,\\
+        \Rightarrow\quad \dot m_L &\approx A_{\mathrm{Str}}
+          \sqrt{\frac{2\,\dpHP\,\rho_L}{\zeta_L}}.
+      \end{aligned}
+    \end{equation}
+    $A_{\mathrm{Str}}$: durchströmter Querschnitt; von der
+    Wärmeübertragungsfläche $A$ in Gl.~(\ref{eq.energiebilanz}) unterscheiden.
+  \item \textbf{Dichte und Temperaturwahl.} Idealgasnäherung
+    $\rho_L=p_{\mathrm{abs}}/(R_L T_{\mathrm{K}})$ mit spezifischer
+    Gaskonstante $R_L$ und absoluter Temperatur $T_{\mathrm{K}}$.
+    Für einen aus Eintrittssignalen gebildeten Proxy: Eintrittsdichte als
+    repräsentative Dichte ansetzen. Daraus folgt bei konstantem
+    $\zeta_L$ und $R_L$
+    \begin{equation}
+      \label{eq.luftproxy.dichte}
+      \dot m_L\propto
+      \sqrt{\frac{\dpHP\,p_{\mathrm{col,in,abs}}}
+                       {T_{\mathrm{col,in,K}}}}.
+    \end{equation}
+    $T_{\mathrm{col,in,K}}$: gemessenes $\Tin$ als absolute Temperatur.
+    Die Luft kühlt entlang des Kühlers ab; die Eintrittsdichte ersetzt
+    hier den räumlichen Dichteverlauf. Ein anderer repräsentativer
+    Zustand verlangt eine dazu passende Druck- und Temperaturzuordnung.
+    $\Tout$ im Nenner ist deshalb eine gesondert zu begründende Variante.
+  \item \textbf{Dimensionslose Form.} Bezugsgrößen an einem gemeinsamen,
+    festen Referenzzustand definieren; positive Druckdifferenz,
+    absoluten Druck und absolute Temperatur verwenden:
+    \begin{equation}
+      \label{eq.luftproxy.relativ}
+      \mrel =
+      \sqrt{\frac{\dpHP}{\Delta p_{\mathrm{HP,ref}}}
+            \frac{p_{\mathrm{col,in,abs}}}{p_{\mathrm{col,in,abs,ref}}}
+            \frac{T_{\mathrm{col,in,K,ref}}}{T_{\mathrm{col,in,K}}}}
+      \;\approx\;\frac{\dot m_L}{\dot m_{L,\mathrm{ref}}}.
+    \end{equation}
+    Die Näherung gilt unter den zuvor genannten Annahmen. Der
+    Referenzmassenstrom muss für die Berechnung des Proxys nicht bekannt
+    sein; aus den Messgrößen entsteht keine kalibrierte Angabe in
+    $\mathrm{kg/s}$. Für Gas- und Dieselbetrieb dieselben Bezugsgrößen
+    verwenden; ihre Festlegung gehört in Kapitel~\ref{ch.methodik}.
+  \item \textbf{Vereinfachung für datengetriebene Modelle.} Feste
+    multiplikative Faktoren lassen sich bei linearer oder
+    potenzförmiger Verwendung des Proxys algebraisch in einen angepassten
+    Modellkoeffizienten aufnehmen. Bei anderen Modellfunktionen die
+    Umparametrierung gesondert prüfen. Die Normierung kann dann bei der
+    Online-Auswertung entfallen; das unnormierte Merkmal ist weiterhin
+    dimensionsbehaftet. Temperaturabhängigkeit und Wurzelbildung lassen
+    sich im Allgemeinen nicht durch einen konstanten Faktor ersetzen.
+    Die Variante ohne Temperaturkorrektur setzt stattdessen
+    \[
+      q_{\mathrm{rel}}=
+      \sqrt{\frac{\dpHP}{\Delta p_{\mathrm{HP,ref}}}
+            \frac{p_{\mathrm{col,in,abs}}}{p_{\mathrm{col,in,abs,ref}}}}
+      =\mrel\sqrt{\frac{T_{\mathrm{col,in,K}}}
+                            {T_{\mathrm{col,in,K,ref}}}}.
+    \]
+    Temperaturumrechnung in Kelvin und Umrechnung eines Relativdrucks
+    auf Absolutdruck sind additive Umrechnungen. Innerhalb dieser
+    Wurzelfunktion können sie nicht einfach in einem konstanten
+    Koeffizienten aufgehen. Einheitenfaktoren dagegen sind konstant.
+  \item \textbf{Geltungsbereich und Einordnung.} Die Herleitung enthält
+    keine brennstoffspezifische Größe. Ein gemeinsamer Proxy für Gas und
+    Diesel ist bei gleichem Luftpfad und vergleichbaren Stoffeigenschaften
+    begründbar; gleiche Modellkoeffizienten oder gleiche Güte folgen
+    daraus nicht. Reynolds-Abhängigkeit des Verlustbeiwerts,
+    Kondensation, Verschmutzung und Änderungen der Strömungsaufteilung
+    begrenzen die Näherung. Ein aus der Motorfüllung abgeleiteter
+    Massenstrom ist bei Abzweigungen oder Speicherwirkung nicht ohne
+    Bilanzprüfung dem Kühlerdurchsatz gleichzusetzen.
+    Die gemessene Druckdifferenz muss den betrachteten Kühlerpfad erfassen.
+    Konkrete Messkanäle, Druckabgriffe und Druckrekonstruktion:
+    Kapitel~\ref{ch.datenbasis} und \ref{ch.methodik}. Vergleich von
+    $\mrel$ und $q_{\mathrm{rel}}$ hinsichtlich Vorhersagefehler und
+    Ventilwirkung: Kapitel~\ref{ch.ergebnisse}; daraus allein folgt kein
+    Nachweis der Genauigkeit gegenüber dem tatsächlichen Luftmassenstrom.
+  % COPILOT-STICHPUNKTE END Luftmassenstromproxy-20260922
+  \item Stellkanal: das Ventil stellt $\dot m_W$ durch das LT-Bündel, damit
+    $\alpha_W$, $kA$, NTU und $\varepsilon$. Bei großem Wasserdurchsatz
+    verschwindet $1/(\alpha_W A_W)$ gegen den Luftwiderstand, weiterer Hub wirkt
+    weniger. Totzone, Wendepunkt und S-Form folgen nicht aus der Bilanz; sie
+    sind Messbefund (Abschnitt~\ref{ssec.erg.ol.kennlinie}).
+  \item Ungemessene Hypothesen für kleine Hübe: laminarer Bodenwert der
+    Nusselt-Zahl bei kleinem Wasserdurchsatz (Vagapov 2024, Gl.~7.31) und
+    Wechsel des kleineren Kapazitätsstroms auf die Wasserseite (Tschöke/Pantow
+    2018, S.~696, Gl.~8 und 9); beide Keys liegen in den BIB-Nachträgen.
+  \item Die Ventilkennlinie selbst ist je Pfad linear (Abschnitt~\ref{ChATCo});
+    $\dot m_W(\valveCA)$ und $\varepsilon(\valveCA)$ sind es nicht.
+    $\varepsilon$ ist eine Fläche über Hub und Luftmassenstrom
+    \cite[S.~205, Gl.~7.70 und 7.71]{erikssonModelingControlEngines2014},
+    \cite[S.~132]{erikssonMODELINGTURBOCHARGEDSI},
+    \cite[S.~11, Gl.~2.16]{petterssonSimulationTurboCharged2000},
+    \cite[Gl.~B.8]{suiMeanValueFirst2022},
+    \cite[S.~89]{rupprechtAnalysisSimulationOptimisation2016}.
+\end{itemize}
+
+\begin{equation}
+  \label{eq.k.zusammensetzung}
+  \frac{1}{k\,A} \;=\; \frac{1}{\eta_f\,\alpha_L\,A_L}
+  + R_{\mathrm{Wand}}
+  + \frac{1}{\alpha_W\,A_W}
+\end{equation}
+
+% COPILOT-STICHPUNKTE BEGIN Widerstaende-und-Stroemung-20260922
+\begin{itemize}
+  \item \textbf{Copilot: Grenze der Massenstrom-Potenznäherung.}
+    Aus einer Nusselt-Korrelation kann bei festen Stoffwerten und
+    fester Geometrie $\alpha\propto\dot m^b$ folgen.
+    Bei dominierendem Luftwiderstand und $C_{\min}=C_L$ ergibt sich
+    $\mathrm{NTU}\propto\dot m_L^{b-1}$; eine abnehmende
+    Effektivität setzt zusätzlich $b<1$ voraus
+    \cite[S.~826--827 und 839]{almbauerThermomanagement2019}.
+    Diese Annahmen begründen keinen universellen Exponenten für die
+    spätere datengetriebene Modellierung.
+\end{itemize}
+% COPILOT-STICHPUNKTE END Widerstaende-und-Stroemung-20260922
+
+% ---- Absatz 5: Stellverstaerkung ----
+\begin{itemize}
+  \item Kettenregel auf Gl.~(\ref{eq.Tout.stat}) ergibt
+    Gl.~(\ref{eq.grundlagen.gain.epsntu}): Spannenterm mit
+    $\mathrm{d}\varepsilon/\mathrm{d}\valveCA$, dazu die Mitbewegung von $\Tin$
+    (Gewicht $1-\varepsilon$) und $\TLT$ (Gewicht $\varepsilon$). Das ist
+    Algebra, keine Messung; dass die beiden hinteren Terme nicht null sind,
+    zeigt Abschnitt~\ref{sec.erg.ol}.
+  \item Lokales Vorzeichen negativ nur unter Festhaltebedingung und bei mit dem
+    Hub wachsendem $\varepsilon$. Betrag proportional zur Kühlerspanne, steigt
+    also mit Last und Ladedruck; fällt auf den kleinen Restbeitrag des dritten
+    Terms, sobald $\varepsilon$ nahe eins liegt (Ventil weit offen, Feldbetrieb).
+    Volle Ventilautorität ist deshalb nur im Flankenbereich der Kennlinie
+    messbar.
+  \item Über $\mathrm{NTU}(\dot m_L)$ hängt $\partial\varepsilon/\partial\valveCA$
+    selbst von der Last ab; Kennlinienform und Spanne trennen sich nur
+    näherungsweise.
+  \item Konvention für jede Verstärkungsangabe: Steigungsdefinition (Sekante über
+    ein Hubband oder lokale Steigung), Ventilband und Arbeitspunkt. Eine
+    Vollhub-Sekante ist keine Untergrenze aller lokalen Steigungen, schon wegen
+    der Totzone. Kapitel~\ref{ch.ergebnisse} hält die Konvention ein.
+\end{itemize}
+
+\begin{equation}
+  \label{eq.grundlagen.gain.epsntu}
+  \frac{\mathrm{d}\Tout}{\mathrm{d}\valveCA}
+  \;=\; -\,(\Tin - \TLT)\,\frac{\mathrm{d}\varepsilon}{\mathrm{d}\valveCA}
+  \;+\; (1-\varepsilon)\,\frac{\mathrm{d}\Tin}{\mathrm{d}\valveCA}
+  \;+\; \varepsilon\,\frac{\mathrm{d}\TLT}{\mathrm{d}\valveCA}
+\end{equation}
+
+% COPILOT-STICHPUNKTE BEGIN Partielle-Ventilwirkung-20260922
+\begin{itemize}
+  \item \textbf{Copilot: Festhaltebedingung der Stellwirkung.}
+    Aus Gl.~(\ref{eq.grundlagen.basic.stufen}) folgt bei unverändertem
+    $T_{\mathrm{zw}}$, $\TLT$ und Luftmassenstrom
+    $\partial\Tstat/\partial\valveCA
+      =-(T_{\mathrm{zw}}-\TLT)
+         \partial\varepsilon_{\mathrm{LT}}/\partial\valveCA$.
+    Das Vorzeichen hängt damit auch von der hydraulischen Stellrichtung
+    und der Temperaturdifferenz ab. Die Gesamtmitbewegung im geregelten
+    Betrieb ist eine andere Größe als diese partielle Stellwirkung.
+\end{itemize}
+% COPILOT-STICHPUNKTE END Partielle-Ventilwirkung-20260922
+
+% ---- Absatz 6: Speicher, Rate, Totzeit ----
+\begin{itemize}
+  \item Wand und Kühlwasser sind eigene Speicher
+    \cite[S.~830--831, Gl.~31.35--31.38; S.~838--840, Gl.~31.57--31.65]{almbauerThermomanagement2019},
+    \cite[Gl.~1 und 2]{yinAnalyticModelTransient2003},
+    \cite[Gl.~2 und 27]{ariciVehicleEngineCooling1999}. Austrittstemperatur und
+    Wandtemperatur nicht gleichsetzen.
+  \item Eigene Reduktion auf einen Zustand, Gl.~(\ref{eq.energiebilanz.dyn}):
+    konvektiver Eintrag aus der Behälterbilanz
+    \cite[S.~31, Gl.~2.7]{guzzellaIntroductionModelingControl2010},
+    \cite[S.~164, Gl.~7.26a]{erikssonModelingControlEngines2014},
+    \cite[S.~147, Gl.~4.1.48]{isermannEngineModelingControl2014} minus
+    Wärmeabfuhr. $C_{\mathrm{eff}}$ bündelt die Speicher; $U_{\mathrm{eff}}A$
+    ist ein effektiver Leitwert, nicht das $kA$ der Statik. Vorbild für eine
+    vergrößerte Speichermasse ohne Zusatzzustand
+    \cite[S.~579, Gl.~26]{mrosekParameterEstimationPhysical2009}.
+  \item Zeitkonstante bei eingefrorenen Parametern
+    $\tau = C_{\mathrm{eff}}/(\dot m_L c_{p,L} + U_{\mathrm{eff}}A)$ (Stanivuk
+    2021, S.~117, Gl.~9, Key fehlt;
+    \cite[Gl.~31.36]{almbauerThermomanagement2019}). Wird die Mitteltemperatur
+    $(\Tin + \Tout)/2$ als Treiber angesetzt, steht $kA/2$ im Nenner
+    \cite[S.~230, Gl.~4.6.14--4.6.16]{isermannEngineModelingControl2014}; die
+    Größenordnung ändert das nicht. Pole in 1/s, Zeitkonstanten in s.
+  \item Folge für die Rate: sie wächst mit dem Luftmassenstrom und über
+    $kA(\dot m_W)$ schwach mit dem Wasserdurchsatz
+    \cite[S.~248, Gl.~4.7.39]{isermannEngineModelingControl2014}. Größenordnung
+    nicht aus Auslegungsdaten festlegen, sondern aus Daten
+    (Kapitel~\ref{ch.methodik} und \ref{ch.ergebnisse}); die Autokorrelation
+    geregelter Betriebsdaten identifiziert weder den offenen Pol noch dessen
+    Speicher.
+  \item Konsistenzgrenze: stationär liefert die Einzustandsform
+    $\varepsilon = N/(1+N)$ mit $N = U_{\mathrm{eff}}A/(\dot m_L c_{p,L})$, nicht
+    $1 - e^{-\mathrm{NTU}}$. Deshalb Bilanz zur Termmotivation,
+    $\varepsilon$-NTU-Statik zum Zielwert: Trennung in nichtlineare Statik und
+    nachgeschaltete Dynamik, Hammerstein-Form
+    \cite[Abschn.~2, Abb.~2, S.~4]{vagapovDynamicModelTemperature2022},
+    \[
+      \dot y = \lambda(\dot m_L, \valveCA)\,(T_{\mathrm{stat}} - y)
+    \]
+    mit $T_{\mathrm{stat}}$ aus Gl.~(\ref{eq.Tout.stat}). Bei veränderlicher
+    Rate ist die Dynamik zeitvariant; ein zeitinvariantes lineares Glied wäre
+    eine Zusatzannahme.
+  \item Modellordnung ist Prüfaufgabe, keine feste Zahl: bei Vagapov zwei
+    dominante Beiträge der Kühlmedien, Reduktion auf einen dort mit schlechterem
+    Verlauf \cite[Abschn.~5.2, Gl.~43]{vagapovDynamicModelTemperature2022}; der
+    zweite Pol liegt auf der Kaltseite (Vagapov 2024, Abb.~7.10, Dominanzmaß).
+    Prüfung für die eigene Anlage in Kapitel~\ref{ch.methodik} und
+    \ref{ch.ergebnisse}.
+  \item Totzeit als Verweilzeit $m_s/\dot m_L$
+    \cite[Gl.~41]{vagapovDynamicModelTemperature2022},
+    \cite[S.~3257]{yinAnalyticModelTransient2003},
+    \cite[Gl.~31.57]{almbauerThermomanagement2019},
+    \cite[Gl.~2.173]{guzzellaIntroductionModelingControl2010} plus Rohrstrecke
+    zwischen Ventil und Kühler (Abschnitt~\ref{ChATCo}). Messkette als
+    Sensor-PT1 \cite[Gl.~4.6.42]{isermannEngineModelingControl2014},
+    \cite[Tab.~7.6]{erikssonModelingControlEngines2014},
+    \cite[Gl.~17]{mrosekParameterEstimationPhysical2009}.
+\end{itemize}
+
+\begin{equation}
+  \label{eq.energiebilanz.dyn}
+  C_{\mathrm{eff}}\,\frac{\mathrm{d}\Tout}{\mathrm{d}t}
+  \;=\;
+  \underbrace{\dot m_L\,c_{p,L}\,(\Tin - \Tout)}_{\text{Lufteintrag}}
+  \;-\;
+  \underbrace{U_{\mathrm{eff}}A\,(\Tout - \TLT)}_{\text{Wärmeabfuhr}}
+\end{equation}
+
+% COPILOT-STICHPUNKTE BEGIN Speicherherleitung-20260922
+\begin{itemize}
+  \item \textbf{Copilot: Grenze der Einzustandsbilanz.}
+    Gl.~(\ref{eq.energiebilanz.dyn}) beschreibt einen einstufigen
+    Ersatzkühler mit $\Tin$ und $\TLT$. Der unabhängige HT-Beitrag
+    entfällt durch eine zusätzliche Modellannahme.
+    Für die LT-Stufe allein wäre $T_{\mathrm{zw}}$ die Eintrittstemperatur.
+    Ihr stationärer Grenzwert und der Zielwert der HT-/LT-Exponentialform
+    sind im Allgemeinen verschieden. Eine Relaxation zum
+    HT-/LT-Zielwert gemäß Gl.~(\ref{eq.grundlagen.basic.dynamik})
+    ist deshalb eine eigene reduzierte Modellform.
+  \item Die Verteilung des Ventileinflusses auf Zielwert und Rate sowie
+    seine Stärke sind Modellentscheidungen. Thermische Speicherung,
+    Transportzeit und Sensordynamik können zur gemessenen Verzögerung
+    beitragen \cite[S.~230 und 237--238]{isermannEngineModelingControl2014};
+    eine identifizierte Zeitkonstante ist keinem Bauteil eindeutig zugeordnet.
+\end{itemize}
+% COPILOT-STICHPUNKTE END Speicherherleitung-20260922
+
+\anno{Bild (Visio): thermisches Ersatzschaltbild, $C_{\mathrm{eff}}$ als
+Kapazität, $1/(kA)$ als Widerstand mit Ventilpfeil auf den wasserseitigen
+Anteil, $\Tin$ und $\TLT$ als Quellen, HT-Bündel als vorgeschalteter Block.}
+
+% ---- Absatz 7: lokale Naeherung und Produktfamilien ----
+\begin{itemize}
+  \item Mit $d = \Tin - \Tout$ und der Kühlerspanne gilt
+    $\Tout - \TLT = (\Tin - \TLT) - d$; Gl.~(\ref{eq.energiebilanz.dyn}) wird zu
+    \[
+      \frac{\mathrm{d}\Tout}{\mathrm{d}t} = a\,d - b\,(\Tin - \TLT),
+      \qquad
+      a = \frac{\dot m_L c_{p,L} + U_{\mathrm{eff}}A}{C_{\mathrm{eff}}},
+      \quad
+      b = \frac{U_{\mathrm{eff}}A}{C_{\mathrm{eff}}}.
+    \]
+    Eigene Umformung, keine Literaturgleichung.
+  \item $a$ und $b$ hängen vom nicht gemessenen $\dot m_L$ ab. Lokal affin in
+    messbaren Betriebspunktgrößen (Drehzahl-, Last-, Spannenkoordinate) ergeben
+    sich zwei Produktfamilien: Proxy mal $d$ und Proxy mal Spanne. Die Physik
+    begründet die Familien; Proxywahl und affine Näherung sind
+    Modellentscheidungen (Kapitel~\ref{ch.methodik}). Stütze:
+    \cite[S.~132]{erikssonMODELINGTURBOCHARGEDSI}, Effektivität abhängig von
+    Temperaturniveau, $\dot m_L$ und $\dot m_L/\dot m_W$ (Luft-Luft-Kühler,
+    Struktur übertragbar, Koeffizienten nicht).
+  \item Ventil und Temperatur koppeln in der Bilanz über
+    $kA(\dot m_W)\,(\Tout - \TLT)$. In der Statikform steckt diese Kopplung in
+    $\varepsilon(\valveCA)\,(\Tin - \TLT)$: eine Funktion des Hubs mal exogene
+    Temperaturen, nicht mal $\Tout$. Das ist der physikalische Grund, den
+    Ventileinfluss über den Zielwert zu führen; die Rate trägt nur den schwachen
+    Rest aus dem vorigen Absatz.
+  \item Konstante und linearer $\Tout$-Term sind als affine Restkorrektur
+    zulässig, aber keinem Wärmestrom und keinem Speicher zuzuordnen; ein
+    zusätzlicher $\Tout$-Term verschiebt zusammen mit dem Kern den Gesamtpol.
+  \item Eingangsvorgeschichte: eine kausal gefilterte Spanne kann nicht
+    aufgelöste Speicher (Wand, Wasser) vertreten; als Filterzustand exakt
+    definiert, physikalisch nur Hypothese
+    \cite[Abschn.~5, S.~10--12]{vagapovDynamicModelTemperature2022}.
+\end{itemize}
+
+% ---- Absatz 8: was kein Bibliotheksterm wird ----
+\begin{itemize}
+  \item Umgebungsverlust $(\Tout - T_{\mathrm{amb}})$
+    \cite[Gl.~27 und 34]{ariciVehicleEngineCooling1999},
+    \cite[Gl.~31.13]{almbauerThermomanagement2019},
+    \cite[Gl.~10]{vagapovDynamicModelTemperature2022}: die adiabate Bilanz ist
+    Annahme, Prüfung in Abschnitt~\ref{sec.erg.ol}; $T_{\mathrm{amb}}$ bleibt
+    Gültigkeitsgrenze.
+  \item Kondensation
+    \cite[Abschn.~12.4, S.~265--268]{pucherLadeluftkuehlungUndLadeluftkuehler2012};
+    der marine Kühler wird bei Arava 2026 ohne latenten Term gerechnet (Key
+    fehlt). Kein Term (Feuchte nicht erfasst, unstetig), sondern Grenze:
+    Taupunkt am Kapitelanfang, weiche Untergrenze des Reglers in
+    Kapitel~\ref{ch.ergebnisse}.
+  \item Brennstoffmodus kommt in der Bilanz nicht vor und wirkt nur über die
+    Eingänge. Ein Niveauversatz zwischen den Modi ist deshalb kein Bilanzterm,
+    sondern eine Arbeitspunkt- und Gültigkeitsfrage
+    (Kapitel~\ref{ch.ergebnisse}).
+    % optional, ein Satz
+  \item Weitere Kandidaten aus der Literatur, hier ohne Verdikt: Füll- und
+    Entleerterm $\Tout\,\dot p/p$
+    \cite[Gl.~7.26a]{erikssonModelingControlEngines2014},
+    \cite[Gl.~30]{theotokatosCycleMeanValue2010},
+    \cite[Gl.~20.26]{merkerThermodynamischeGrundlagen2019}; Stoffwertterm über
+    das Temperaturniveau $(\Tin + \TLT)/2$
+    \cite[Gl.~7.70]{erikssonModelingControlEngines2014} (Taler 2017, Gl.~20,
+    Key fehlt); wasserseitige Bilanz $\dot m_W\,(T_{\mathrm{LT,out}} - \TLT)$
+    \cite[S.~96, Gl.~2.170 und 2.171]{guzzellaIntroductionModelingControl2010},
+    \cite[Gl.~4.7.36]{isermannEngineModelingControl2014}. Prüfung in
+    Kapitel~\ref{ch.methodik} und \ref{ch.ergebnisse}.
+  \item Die Lücke, dass keine der Modellquellen dem Ladeluftkühler einen
+    Temperaturzustand mit Ventileingang gibt (marin statisch:
+    \cite{theotokatosCycleMeanValue2010}, \cite{baldiDevelopmentCombinedMean2015},
+    \cite{suiMeanValueFirst2022}; Gegenposition Wahlström 2009, S.~7, Key
+    fehlt), gehört nach Kapitel~\ref{ch.standderTechnik}; hier höchstens ein
+    Satz.
+\end{itemize}
+
+% ---- Absatz 9: Schluss, zwei Saetze, kein Wegweiser ----
+% COPILOT-STICHPUNKTE BEGIN Modellanschluss-20260922
+\begin{itemize}
+  \item \textbf{Copilot: Bezug für die spätere Modellierung.}
+    Die einfache Herleitung am Abschnittsanfang trägt den Verweis
+    auf Temperaturdifferenzen, Durchsatzprodukte und Relaxation.
+    Die folgenden Detailvorschläge legen noch keine Ventilkennlinie,
+    feste Modellordnung oder ausschließliche Ventilwirkung im
+    stationären Zielwert fest.
+\end{itemize}
+% COPILOT-STICHPUNKTE END Modellanschluss-20260922
+\begin{itemize}
+  \item Termfamilien aus der Herleitung: stationärer Zielwert aus der seriellen
+    $\varepsilon$-NTU-Beziehung mit dem Ventil nur darin; Relaxation eines
+    Zustands mit massenstromabhängiger Rate; Produkte aus Betriebspunktproxy und
+    Temperaturdifferenz als lokale Näherung; Totzeit und Messkette; die Grenzen
+    aus dem vorigen Absatz.
+  \item Auswahl, Kollinearität, Schätzbarkeit und Nutzen im Freilauf prüft
+    Kapitel~\ref{ch.methodik} und \ref{ch.ergebnisse}. Ein Satz mit
+    \verb|\ref|, kein Absatz.
+\end{itemize}
+% COPILOT-STICHPUNKTE ENDE ch2-08
+
+% PRUEFPUNKTE (Copilot 16.09.2026, vor dem Ausformulieren):
+% - Exponent: die Altfassung behauptete 0,2 aus Nu ~ Re^0,8 und "Band um 0,2".
+%   Der S-Phys-Fit hat alpha = -0,53 auf m_rel (Steckbrief Physikalischer_Kern).
+%   Hier nur "Fitgroesse auf dem Proxy, kein Waermeuebergangsgesetz"; Zahl und
+%   Einordnung nach Kap. 6.
+% - Beleg fuer den Druckverlust-Proxy (Absatz 4) fehlt: Almbauer Kap. 31 oder
+%   Guzzella/Onder Kap. 2 nachschlagen.
+% - Schema (Visio) nach dem Skill abbildung; Caption ein Satz.
+% KEYS FEHLEN in Masterarbeit.bib (Klartext oben durch \cite ersetzen):
+% - Staging BIB_NACHTRAG_0709.bib: Holmgren 2005, Stanivuk 2021, Tschoeke/Pucher
+%   2018 (+ Kapitel Pucher, Pantow), Ekberg 2018, Arava 2026, Taler 2017.
+% - Staging BIB_NACHTRAG_2608.bib: Vagapov 2024 (vagapovModellierungIdentifikationUnd2024).
+% - Heywood, Llamas 2019, Wahlstroem 2009: Key pruefen.
+% GESTRICHEN gegenueber der Altfassung: eq.verdichter, eq.alpha.scaling,
+% eq.kA.Praxis (nur ch2-intern referenziert, jetzt Saetze); Tabelle
+% tab.grundlagen.terme.literatur samt \anno; alle eigenen Pruefstandszahlen
+% (Saettigung, Totzone, epsilon-Band, Zeichnungsabschaetzung, NTU-Band);
+% Copilot-Zusaetze ch2-05/06/07 und Kommentarbloecke vom 07.09. (aufgegangen).
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%--------------------------------------------
+%  Modellprädiktive Regelung
+%%%%%%%%%%%%%%%%%%%%%%%%%%--------------------------------------------
+
+\section{Modellprädiktive Regelung}
+Heute regelt die Anlage mit dem PI-Anteil und der Vorsteuerung aus
+Abschnitt~\ref{ChATCo}. Der PI-Anteil reagiert auf die
+aktuelle Regelabweichung und greift damit erst ein, wenn die Ladelufttemperatur
+bereits abweicht. Der Stellkanal ist dabei nichtlinear, mit Totzone und Sättigung
+in der Ventilkennlinie (Abschnitt~\ref{ssec.erg.ol.kennlinie}). Großmotoren
+dieser Baugröße sind zudem träge, sodass eine Abweichung spät zurückgeholt wird.
+Ein modellprädiktiver Regler rechnet den Verlauf dagegen über einen Horizont
+voraus und führt Stell- und Temperaturgrenzen als Nebenbedingung mit.
+
+% ===== ERGÄNZT Copilot 01.09.2026 (PI-Gesetz, MPC-Gleichung, Offset-frei;
+% ===== Fassung nach Lektor: K_c/T_I-Form mit Vorsteueranteil, weiche
+% ===== Untergrenze, Stellhorizont N_u, u_{-1} definiert) =====
+Der Serienregler kombiniert eine Vorsteuerung mit einem PI-Anteil
+(Abschnitt~\ref{ChATCo}). Die Stellgröße folgt aus der Regelabweichung
+$e(t) = r(t) - y(t)$,
+\begin{equation}
+  \label{eq.grundlagen.pi}
+  u(t) \;=\; u_{\mathrm{ff}}(t)
+  + K_c \Bigl( e(t) + \frac{1}{T_I} \int_0^t e(\tau)\,\mathrm d\tau \Bigr),
+\end{equation}
+mit dem Vorsteueranteil $u_{\mathrm{ff}}$ aus dem Kennfeld über Last
+und Temperaturdifferenz, der Reglerverstärkung $K_c$ und der
+Nachstellzeit $T_I$. Der Integralanteil beseitigt bleibende
+Abweichungen und trägt damit das Niveau; er greift aber erst ein,
+nachdem sich eine Störung im Ausgang gezeigt hat. An den Stellgrenzen
+hält ein Anti-Windup den Integrator an (Abschnitt~\ref{ChATCo}).
+
+Der modellprädiktive Regler löst dagegen in jedem Takt ein
+Optimierungsproblem über einen Prädiktionshorizont von $N$ Schritten
+mit $N_u \le N$ freien Stellschritten,
+\begin{equation}
+  \label{eq.grundlagen.mpc}
+  \min_{\Delta u_0,\dots,\Delta u_{N_u-1}}\;
+  \sum_{k=1}^{N} \bigl(y_k - r_k\bigr)^2
+  \;+\; \lambda \sum_{k=0}^{N_u-1} \Delta u_k^2
+  \;+\; \mu \sum_{k=1}^{N} s_k^2,
+\end{equation}
+unter $u_{\min} \le u_k \le u_{\max}$ und der weichen Untergrenze
+$y_k \ge y_{\min} - s_k$ mit Schlupfvariablen $s_k \ge 0$. Die Folge
+$y_k$ liefert das Streckenmodell; $\Delta u_k = u_k - u_{k-1}$ ist der
+Stellschritt, wobei $u_{-1}$ die zuletzt gestellte Größe bezeichnet.
+Das Gewicht $\lambda$ setzt Stellbewegung ins Verhältnis zum
+Regelfehler, $\mu$ bestraft Bandverletzungen
+\cite[Kap.~1]{rawlingsModelPredictiveControl20202020}. Angewendet wird
+nur der erste Stellschritt; im nächsten Takt wird mit der neuen Messung
+neu gerechnet (gleitender Horizont). Für die Ladeluftstrecke ist $u$
+die Ventilstellung $\valveCA$. Ist das Modell linear in der
+Stellgröße, ist (\ref{eq.grundlagen.mpc}) ein konvexes quadratisches
+Programm. Bleibende Störungen und Modellfehler behandelt die
+offsetfreie Erweiterung: Ein Störmodell wird als zusätzlicher Zustand
+mitgeschätzt, ein Beobachter korrigiert damit die Vorhersage, und der
+Regler erreicht den Sollwert trotz Versatz
+\cite{muskeDisturbanceModelingOffsetfree2002,
+pannocchiaDisturbanceModelsOffsetfree2003,
+maederLinearOffsetfreeModel2009}. Für die Umsetzung wird das
+Streckenmodell mit einem Halteglied im Reglertakt diskretisiert; Takt,
+Horizont und Gewichte der vorliegenden Arbeit stehen in
+Abschnitt~\ref{sec.methodik.mpc}.
+
+Zur modellprädiktiven Regelung von Verbrennungsmotoren liegen zahlreiche Arbeiten
+vor; Kapitel~\ref{ch.standderTechnik} ordnet sie ein.
+
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{kapitel2/pictures/mpc_gleitender_horizont.png}
+  \caption[MPC mit gleitendem Horizont]{MPC mit gleitendem Horizont:
+    Temperaturvorhersage, Stellhorizont und zuerst angewandter Stellschritt.
+    Eigene schematische Darstellung nach
+    \cite[Kap.~1]{rawlingsModelPredictiveControl20202020};
+    frei gewählte Verläufe ohne Messdaten, erneute Optimierung im nächsten Takt.}
+  \label{fig.grundlagen.mpc.horizont}
+\end{figure}
+
+
+
+
+%Störgrößen prädiktion auf jeden falll noch ERwähnen!!!
+
+%was ist sonst noch für mpc als grundlagenwissen für meine arbeit wichtig??
