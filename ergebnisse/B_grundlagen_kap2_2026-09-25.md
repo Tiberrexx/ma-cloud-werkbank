@@ -24,42 +24,56 @@ Zeilenangaben beziehen sich auf diese Kopie. Stichpunkt-Zuarbeit, kein Fließtex
 |---|---|---|
 | `eq.grundlagen.basic.luftleistung` (Z. 330–333) | Definition, nichts umzuformen | – |
 | `eq.grundlagen.basic.waermedurchgang` (Z. 346–349) | Definition, nichts umzuformen | – |
+| `eq.k.zusammensetzung` (Z. 752–757) | Reihenschaltung der drei Widerstände korrekt. Nicht genannt: Verschmutzungswiderstände vernachlässigt, $\eta_f$ (Oberflächenwirkungsgrad, Z. 601) und $R_{\mathrm{Wand}}$ als konstant angesetzt | Annahmen nennen; Folgerung Z. 734–735 algebraisch gedeckt: für $\alpha_W A_W\to\infty$ strebt $kA$ gegen $1/(1/(\eta_f\alpha_L A_L)+R_{\mathrm{Wand}})$ |
 | `eq.grundlagen.basic.stufen` (Z. 366–374) und `eq.grundlagen.basic.ltspanne` (Z. 387–391) | Umformung korrekt | Zusätzlich die geschlossene Form angeben (unten G1): $\Tstat$ ist eine konvexe Kombination von $\Tin$, $\THT$, $\TLT$ mit Gewichten $(1-\varepsilon_{HT})(1-\varepsilon_{LT})$, $\varepsilon_{HT}(1-\varepsilon_{LT})$, $\varepsilon_{LT}$; Summe 1 |
-| Kommentar EB21 (Z. 315–320): `Tstat = T_col_in - PH*dH - P3*d3`, `d3 = (T_HTCW-T_LTCW)+cFix*dH` | Exakte Serienidentität gilt genau für $P_H=\varepsilon_{HT}$, $P_3=\varepsilon_{LT}$, $c=1-\varepsilon_{HT}$ (sympy). Kommentar „cFix ist nicht exakt 1-PH“ ist damit richtig eingeordnet | Im Text: mit festem `cFix` ist die EB21-Form eine Näherung der Serienform; sie wird exakt, wenn `cFix = 1 - PH` |
-| `eq.grundlagen.basic.produkte` (Z. 404–413) | Ausmultiplizieren korrekt | Für den QP festhalten: $a_2 g(\valveCA)\Delta T$ ist linear in $g(\valveCA)$, solange $\Delta T$ aus exogenen Größen besteht ($\Tin$, $\THT$, $\TLT$) und nicht aus $\Tout$ |
-| `eq.grundlagen.basic.dynamik` (Z. 436–440) | Form korrekt. $\lambda(\mrel,\valveCA)$ mit Ventilabhängigkeit ergibt ein Produkt $\valveCA\cdot\Tout$: bilinear, **nicht QP-tauglich** ohne Einfrieren | Satz ergänzen: Ventil nur im Zielwert führen ist die Bedingung für den linearen QP (Z. 447–448 nennt es nur Modellvereinfachung) |
-| Z. 446: $\lambda=c_\lambda\mrel$ | Aus `eq.energiebilanz.dyn` folgt $\lambda=(\dot m_L c_{p,L}+U_{\mathrm{eff}}A)/C_{\mathrm{eff}}$ (sympy). Der Anteil $U_{\mathrm{eff}}A/C_{\mathrm{eff}}$ verschwindet bei $\dot m_L\to0$ nicht | Affine Rate $\lambda=c_0+c_1\mrel$ als physikalisch näherliegende Variante nennen; reine Proportionalität ist eine zusätzliche Annahme |
+| Kommentar EB21 (Z. 315–320): `Tstat = T_col_in - PH*dH - P3*d3`, `d3 = (T_HTCW-T_LTCW)+cFix*dH` | Koeffizientenvergleich (sympy, solve nach $P_H$, $P_3$): exakt für $P_3=\varepsilon_{LT}$ und $P_H=\varepsilon_{HT}+\varepsilon_{LT}(1-\varepsilon_{HT}-c)$ bei beliebigem $c$ (= `cFix`). Bei konstanten Koeffizienten ist die EB21-Form damit für jedes feste `cFix` exakt; $P_H=\varepsilon_{HT}$ folgt nur mit $c=1-\varepsilon_{HT}$. $P_H$ und $c$ sind nicht getrennt bestimmbar (passt zu Z. 319–320: unabhängige Fitkoeffizienten) | $P_H$ nicht als $\varepsilon_{HT}$ und `cFix` nicht als $1-\varepsilon_{HT}$ deuten. Mit festem `cFix` bleibt die Form exakt, $P_H$ trägt dann aber den ventilabhängigen Anteil $\varepsilon_{LT}(1-\varepsilon_{HT}-c_{\mathrm{Fix}})$. Näherung erst, wenn $\varepsilon_{LT}$ (bzw. $P_3$) mit $\mrel$ oder $\valveCA$ variiert und $P_H$, `cFix` konstant bleiben; exakt dann nur bei konstantem $\varepsilon_{HT}$ und $c_{\mathrm{Fix}}=1-\varepsilon_{HT}$ |
+| `eq.grundlagen.basic.produkte` (Z. 404–413) | Ausmultiplizieren korrekt | Für den QP festhalten: $a_2 g(\valveCA)\Delta T$ ist linear in $\valveCA$ nur, wenn $g$ affin ist oder im QP um den aktuellen Hub linearisiert wird ($g(u)\approx g(u_0)+g'(u_0)(u-u_0)$), und nur, solange $\Delta T$ aus exogenen Größen besteht ($\Tin$, $\THT$, $\TLT$), nicht aus $\Tout$. Wird $v=g(\valveCA)$ mit monotonem $g$ als Stellgröße genommen, bleiben die Box-Schranken linear, Ratenschranke und $\Delta u$-Gewicht in $\valveCA$ sind in $v$ aber nicht mehr linear |
+| `eq.grundlagen.basic.dynamik` (Z. 436–440) | Form korrekt. $\lambda(\mrel,\valveCA)$ mit Ventilabhängigkeit ergibt ein Produkt $\valveCA\cdot\Tout$: bilinear, **nicht QP-tauglich** ohne Einfrieren | Satz ergänzen (Z. 447–448 nennt es nur Modellvereinfachung): Ventil nur im Zielwert (mit affinem bzw. linearisiertem $g$) ist eine hinreichende Form für den linearen QP, keine notwendige; ein Ventilterm in der Rate ist nach Einfrieren oder Linearisieren ebenfalls QP-fähig, dann nur genähert |
+| Z. 446: $\lambda=c_\lambda\mrel$ | Aus `eq.energiebilanz.dyn` folgt $\lambda=(\dot m_L c_{p,L}+U_{\mathrm{eff}}A)/C_{\mathrm{eff}}$ (sympy). Nach Z. 921 hängt auch $U_{\mathrm{eff}}A/C_{\mathrm{eff}}$ von $\dot m_L$ ab; ist der Leitwert luftseitig begrenzt (analog Z. 611–612), geht $\lambda$ für $\dot m_L\to0$ gegen null | Proportionale und affine Rate sind beide lokale Näherungen im Betriebsband; die affine $\lambda=c_0+c_1\mrel$ hat einen freien Achsenabschnitt (bei $U_{\mathrm{eff}}A=\kappa\dot m_L^p$: $\kappa(1-p)\dot m_0^p/C_{\mathrm{eff}}$), die proportionale setzt ihn null (Zusatzannahme) |
 | `eq.energiebilanz` (Z. 524–529) | Vorzeichen korrekt (Wasser erwärmt sich) | Einstufige Ersatzbeschreibung ist schon im Copilot-Punkt Z. 497–503 benannt |
 | Kennzahlen Z. 533–538 | $\varepsilon=(C_{\min}/C_L)\,\varepsilon_Q$ korrekt (sympy) | – |
 | Gegenstrom-Formel Z. 539–541 | Korrekt. Grenzfall $C_r\to0$ ergibt $1-e^{-\mathrm{NTU}}$ (sympy). Bei $C_r=1$ ist der Ausdruck 0/0, Grenzwert $\mathrm{NTU}/(1+\mathrm{NTU})$ | Gültigkeit „$C_r<1$“ an die Formel schreiben |
 | `eq.Tout.stat` und unnummerierte Zweistufenform (Z. 568–577) | Korrekt; Exponentialform = Stufenform mit $\varepsilon=1-e^{-\mathrm{NTU}}$ (sympy) | Unnummerierte Gleichung nummerieren; Z. 994–995 greift sie als „serielle ε-NTU-Beziehung“ auf |
 | Räumliche Bilanz Z. 584–585 | $C_L\,\mathrm dT/\mathrm da=-k(T-T_W)$ ergibt $T(A)=T_W+(T_0-T_W)e^{-kA/C_L}$ (sympy); $k$ ist hier flächenbezogen | Einheit von $k$ (W/(m²K)) nennen, sonst Verwechslung mit $kA$ |
 | Z. 555–556: „Zielwert liegt zwischen $\Tin$, $\THT$ und $\TLT$“ | Stimmt, präziser als konvexe Kombination (s. oben), gilt für $0\le\varepsilon\le1$ | Gewichte angeben; sie zeigen, dass $\THT$ nur über $\varepsilon_{HT}(1-\varepsilon_{LT})$ eingeht |
-| `eq.grundlagen.gain.epsntu` (Z. 796–802) | Kettenregel korrekt (sympy). Voraussetzung: $\dot m_L$ fest; hängt $\varepsilon$ von $\dot m_L$ ab und bewegt sich $\dot m_L$ mit, fehlt ein Term | Festhaltebedingung „$\dot m_L$ konstant“ in die Gleichung schreiben |
+| `eq.grundlagen.gain.epsntu` (Z. 796–802) | Kettenregel korrekt (sympy). Mit totalen Ableitungen exakt; $\mathrm d\varepsilon/\mathrm d\valveCA$ enthält dann $\partial\varepsilon/\partial\dot m_L\cdot\mathrm d\dot m_L/\mathrm d\valveCA$ | Festlegen, welche Ableitung gemeint ist. Wird $\mathrm d\varepsilon/\mathrm d\valveCA$ als Kennlinienableitung $\partial\varepsilon/\partial\valveCA$ gelesen (wie Z. 787), den Term $-(\Tin-\TLT)\,\partial\varepsilon/\partial\dot m_L\cdot\mathrm d\dot m_L/\mathrm d\valveCA$ ergänzen oder $\dot m_L$ ausdrücklich festhalten |
 | Z. 781–783: „Vorzeichen negativ … bei mit dem Hub wachsendem $\varepsilon$“ | Zusätzlich nötig: Kühlerspanne $\Tin-\TLT>0$ | Bedingung ergänzen (für die LT-Stufe genauer $T_{zw}-\TLT>0$, vgl. Z. 807–811) |
 | Gain-Gleichung vs. Zweistufenform | `eq.grundlagen.gain.epsntu` nutzt die einstufige Spanne $\Tin-\TLT$; die Zweistufenform (Z. 807–811) die LT-Spanne $T_{zw}-\TLT$ | Kennzeichnen, dass die erste Gleichung die einstufige Ersatzform ist; für die Arbeit gilt die zweite |
 | Stationärer Grenzwert Z. 848–850 | $\varepsilon=N/(1+N)$, $N=U_{\mathrm{eff}}A/(\dot m_L c_{p,L})$ korrekt (sympy) | – |
 | Zeitkonstante Z. 835–840 | $\tau=C_{\mathrm{eff}}/(\dot m_L c_{p,L}+U_{\mathrm{eff}}A)$ korrekt; mit Mitteltemperatur $\tau=C/(\dot m_L c_p+kA/2)$ korrekt (sympy) | – |
 | Lokale Form Z. 911–920 | $a=(\dot m_L c_{p,L}+U_{\mathrm{eff}}A)/C_{\mathrm{eff}}$, $b=U_{\mathrm{eff}}A/C_{\mathrm{eff}}$ korrekt (sympy) | – |
-| Massenstromexponent Z. 611–613 | $\mathrm{d}\ln\mathrm{NTU}/\mathrm{d}\ln\dot m_L=p-1$ korrekt, wenn $C_{\min}=C_L$ | Bedingung $C_{\min}=C_L$ an dieser Stelle wiederholen (steht erst Z. 764–765) |
+| Massenstromexponent Z. 611–613 | $\mathrm{d}\ln\mathrm{NTU}/\mathrm{d}\ln\dot m_L=p-1$ korrekt, wenn $C_{\min}=C_L$ | Bedingung $C_{\min}=C_L$ an dieser Stelle wiederholen (steht Z. 543–546 und Z. 764–765, fehlt bei Z. 611–613) |
 | `eq.luftproxy.druckverlust`, `.dichte`, `.relativ` (Z. 653–691) | Umstellung korrekt: $\dot m_L=A_{\mathrm{Str}}\sqrt{2\,\dpHP\,\rho_L/\zeta_L}$; mit $\rho=p/(RT)$ folgt $\dot m_L\propto\sqrt{\dpHP\,p/T}$; $\mrel=\dot m_L/\dot m_{L,\mathrm{ref}}$ unter denselben Annahmen (sympy) | – |
 | $q_{\mathrm{rel}}$ (Z. 706–712) | $q_{\mathrm{rel}}=\mrel\sqrt{T/T_{\mathrm{ref}}}$ korrekt (sympy) | – |
-| MPC-Satz Z. 1080–1082: „Ist das Modell linear in der Stellgröße, ist (mpc) ein konvexes QP“ | **Unvollständig.** Über mehrere Schritte ist die Prädiktion nur affin in $u$, wenn das Modell auch im Zustand affin ist. Gegenbeispiel (sympy): $x^+=x-\theta x^2+u$ ergibt $\partial^2x_2/\partial u_0^2=-2\theta\neq0$. Bilinear $u\cdot x$: gemischte Ableitung $\neq0$. LPV mit exogenem Scheduling ($\mrel$ als Messgröße): beide Ableitungen null | Formulieren: Modell affin in Zustand und Stellgröße bei gegebenem Verlauf der exogenen Größen (LPV mit gemessener Scheduling-Größe); dann quadratische Kosten plus lineare Beschränkungen = konvexes QP |
+| MPC-Satz Z. 1080–1082: „Ist das Modell linear in der Stellgröße, ist (mpc) ein konvexes QP“ | **Unvollständig.** Die Prädiktion ist affin in $u$, wenn das Modell gemeinsam affin in $u$ und in den von $u$ beeinflussten Zuständen ist; die Koeffizienten dürfen von exogenen Größen und von Zuständen abhängen, die $u$ nicht erreicht (z. B. $\Tin$ als eigener Zustand, Z. 490–491, solange das Modell keinen Ventilpfad auf $\Tin$ enthält; nach Z. 777–780 bewegt sich $\Tin$ mit dem Hub mit, Nachweis in `sec.erg.ol`). Gegenbeispiel (sympy): $x^+=x-\theta x^2+u$ ergibt $\partial^2x_2/\partial u_0^2=-2\theta\neq0$. Bilinear $u\cdot x$: gemischte Ableitung $\neq0$. LPV mit exogenem Scheduling ($\mrel$ als Messgröße): beide Ableitungen null | Formulieren: Modell gemeinsam affin in Stellgröße und den von ihr beeinflussten Zuständen bei gegebenem Verlauf der exogenen Größen (LPV mit gemessener Scheduling-Größe); dann quadratische Kosten plus lineare Beschränkungen = konvexes QP |
 
 ### Annahmen, die fehlen oder nur verstreut stehen
 
-- **Ventilschaltung (Z. 249–256):** Z. 250 „Dreiwegeventil stellt den Wasserdurchsatz“ (Verteilen),
-  Z. 253 „Mischventile“ (Mischen). Für $\varepsilon_{LT}$ mit Bezug $\TLT$ muss die
-  LT-Stufe mit Wasser der Temperatur $\TLT$ angeströmt werden, also Verteilschaltung mit Bypass.
-  Bei Mischschaltung wäre die Wassereintrittstemperatur eine Mischtemperatur. Schaltung nennen
-  und als Annahme führen.
+- **Ventilschaltung (Z. 249–265):**
+  - Z. 249–250 nennt ein Dreiwegeventil, das den Wasserdurchsatz durch die LT-Stufe einstellt;
+    Z. 253 nennt Mischventile. Die Ventilbauart legt die hydraulische Schaltung nicht fest; ein
+    Widerspruch zwischen Z. 250 und Z. 253 ist damit nicht belegt.
+  - Umlenk- bzw. Verteilschaltung mit Bypass (auch mit Mischventil im Rücklauf möglich): Das
+    Ventil stellt den Durchsatz durch die LT-Stufe, die Wassereintrittstemperatur der Stufe ist
+    $\TLT$. Beimisch- oder Einspritzschaltung (eigene Pumpe im Stufenkreis): Eintritt mit
+    Mischtemperatur, $\varepsilon_{LT}$ dann nicht auf $\TLT$ bezogen. Diese Einordnung ist
+    ohne Literaturbeleg (s. Offen).
+  - Z. 263–265 (Rohrstrecke zwischen Mischventil und Kühlereintritt totzeitkritisch) legt das
+    Ventil vor den Kühlereintritt; das kann auf eine veränderliche Wassereintrittstemperatur
+    hindeuten, belegt die Schaltung aber nicht.
+  - Schaltung und Einbauort an der Anlage bzw. aus der Anlagendokumentation klären und als
+    Annahme führen.
 - **Messort von $\THT$, $\TLT$:** Eintritt der jeweiligen Stufe oder Kreisvorlauf? Die
-  Stufengleichungen setzen die Wassereintrittstemperatur der Stufe voraus.
+  Stufengleichungen setzen die Wassereintrittstemperatur der Stufe voraus
+  (vgl. Z. 557–558: Sensorlage nicht verifiziert). Z. 261–262: Temperatursensor stromab des
+  Ventils, Messgröße dort nicht angegeben; für den Messort von $\TLT$ daraus nichts ableiten.
 - **Quasistationäres $\varepsilon$:** Die Stufengleichungen nehmen $\varepsilon$ als momentane
   Funktion von Durchsätzen; Wand- und Wasserdynamik stecken dann allein in $\lambda$. Einmal
   ausdrücklich nennen (steht implizit in Z. 848–859).
-- **$\varepsilon$-NTU-Voraussetzungen:** konstante Stoffwerte, konstantes $k$ über der Fläche,
-  keine Längswärmeleitung, feste Stromführung. Z. 512–516 nennt nur die Stromführung.
+- **$\varepsilon$-NTU-Voraussetzungen** (verstreut): stationär, adiabat, konstante Stoffwerte
+  Z. 507–509 (zu Gl. `eq.energiebilanz`), Stromführung Z. 512–516, konstantes $T_W$ und
+  $C_W\gg C_L$ Z. 584–588. Es fehlen konstantes $k$ über der Fläche und vernachlässigte
+  Längswärmeleitung. Gebündelt an der Gegenstrom-Formel nennen.
 - **Kapazitätsstrom bei kleinem Hub:** Z. 543–546 setzt $C_{\min}=C_L$ „über den ganzen
   Ventilhub“; Z. 738–741 nennt als Hypothese den Wechsel von $C_{\min}$ auf die Wasserseite bei
   kleinen Hüben. Dann gilt $\varepsilon=1-e^{-\mathrm{NTU}}$ für die Luftseite nicht mehr.
@@ -70,29 +84,49 @@ Zeilenangaben beziehen sich auf diese Kopie. Stichpunkt-Zuarbeit, kein Fließtex
 
 ### Zitierte Lehrbuchstellen
 
-- Alle Stellen in diesem Abschnitt (Almbauer 2019 Gl. 31.x, Pucher 2012 Gl. 12.6–12.8,
-  Isermann 2014 Gl. 4.6.x/4.7.x, Eriksson & Nielsen 2014 Gl. 7.x, Guzzella & Onder 2010,
-  Sui u. a. 2022 Anhang B, Yin & Jensen 2003, Vagapov u. a. 2022, Rupprecht 2016, Mrosek 2009,
-  Theotokatos 2010, Baldi 2015): **nicht prüfbar** in dieser Sitzung (kein Volltextzugang).
+- Alle Stellen in diesem Abschnitt (ch2 Z. 304–1032) **nicht prüfbar** in dieser Sitzung
+  (kein Volltextzugang). Lokal zu prüfen: Almbauer 2019 (S. 821–840, Gl. 31.x), Pucher 2012
+  (S. 256–257, Gl. 12.3–12.8; Abschn. 12.4, S. 265–268), Isermann 2014 (S. 147, Gl. 4.1.48;
+  Gl. 4.6.x, 4.7.x), Eriksson & Nielsen 2014 (Gl. 7.x, Tab. 7.6),
+  `erikssonMODELINGTURBOCHARGEDSI` S. 132, Guzzella & Onder 2010, Sui u. a. 2022 Anhang B,
+  Yin & Jensen 2003, Vagapov u. a. 2022, Rupprecht 2016, Mrosek 2009, Theotokatos 2010,
+  Baldi 2015, Baar 2019 (S. 769–780), Pettersson 2000 (S. 11, Gl. 2.16), Arici 1999
+  (Gl. 2, 27, 34), Merker 2019 (Gl. 20.26).
 - Inhaltliche Plausibilität (nicht Stelle): Die Gleichungsformen passen zu den genannten
   Gleichungstypen (Bilanz, Serienwiderstand, $\varepsilon$-NTU, Behälterbilanz). Das ist keine
   Prüfung der Seitenzahl.
 - Formale Auffälligkeiten:
   - Z. 739 und Z. 863 nennen „Vagapov 2024“ im Klartext, obwohl der Key
     `vagapovModellierungIdentifikationUnd2024` existiert (ch3 Z. 1081). Durch `\cite` ersetzen.
+  - Weitere Klartextverweise ohne `\cite`: Tschöke/Pucher 2018, S. 68, Gl. 41 (Z. 536),
+    Holmgren 2005, Gl. 3.26 (Z. 563–565), Llamas 2019, S. 18 (Z. 620), Heywood, S. 54,
+    Gl. 2.27a (Z. 622), Tschöke/Pantow 2018, S. 696, Gl. 8 und 9 (Z. 740–741), Stanivuk 2021,
+    S. 117, Gl. 9 (Z. 835–836), Arava 2026 (Z. 954), Taler 2017, Gl. 20 (Z. 969–970),
+    Wahlström 2009, S. 7 (Z. 977). Keys laut ch2 Z. 1014–1017 in BIB_NACHTRAG_0709.bib
+    (Holmgren, Stanivuk, Tschöke/Pucher mit Pantow, Arava, Taler), bei Heywood, Llamas und
+    Wahlström „Key pruefen“; nach Übernahme durch `\cite` ersetzen.
   - Z. 650: Quadratischer Druckverlust nur mit MathWorks-Doku belegt; Kandidaten aus Auftrag A
     (Eriksson & Nielsen 2014 Kap. 7, Shah & Sekulić 2003 Kap. 6, VDI Heat Atlas L1) ergänzen.
-  - Z. 209, 217: `\cite{everllencese4960DFProject2025}` ohne Seitenangabe, andere Werkszitate haben Seiten.
+  - Z. 209, 217 (`everllencese4960DFProject2025`) und Z. 251
+    (`everllenceseTemperaturregelventilMitAnbau2025`) ohne Seitenangabe; übrige Werkszitate mit Seiten.
 
 ### Stufenreihenfolge (HT zuerst, dann LT)
 
-- Konsistent in: Z. 178–181 (Anlagenbeschreibung), Z. 204–208 (HT-Kreis), Z. 362–372
+- Richtung konsistent in: Z. 178–181 (Anlagenbeschreibung), Z. 362–372
   (Grundherleitung), Z. 551–553 (Stichpunkte), Z. 574–577 (Exponentialform), Z. 807–811
-  (partielle Stellwirkung), Z. 892 (Einzustandsgrenze).
+  (partielle Stellwirkung), Z. 892 (Einzustandsgrenze), Z. 905–907 (Ersatzschaltbild:
+  „HT-Bündel als vorgeschalteter Block“).
+- Status uneinheitlich: Z. 178–181 stellt HT vor LT ohne Beleg als Tatsache dar, Z. 395–396 als
+  Systemvereinfachung, Z. 557–558 als nicht verifizierte Geometrie. In der Anlagenbeschreibung
+  als Annahme kennzeichnen oder mit Quelle belegen.
 - Einstufige Ersatzformen ohne HT-Stufe: `eq.energiebilanz` (Z. 524–529),
-  `eq.energiebilanz.dyn` (Z. 877–884), `eq.grundlagen.gain.epsntu` (Z. 796–802). Die
-  Copilot-Punkte Z. 497–503 und 888–896 kennzeichnen das. Die Gain-Gleichung ist noch nicht
-  gekennzeichnet (s. Tabelle).
+  `eq.energiebilanz.dyn` (Z. 877–884), `eq.grundlagen.gain.epsntu` (Z. 796–802) sowie
+  `eq.Tout.stat` (Z. 568–572), die Z. 547 und Z. 857 als Zielwert verwenden, während Z. 371
+  und Z. 456 den zweistufigen Zielwert festlegen. Z. 857 auf
+  Gl. (`eq.grundlagen.basic.stufen`) umstellen oder `eq.Tout.stat` dort ausdrücklich als
+  einstufige Ersatzform bzw. als Baustein je Stufe (Z. 551) kennzeichnen. Die
+  Copilot-Punkte Z. 497–503 und 888–896 kennzeichnen die Einstufigkeit für die Bilanzen. Die
+  Gain-Gleichung ist noch nicht gekennzeichnet (s. Tabelle).
 - **T1 Begriff:** Z. 184–185 definiert „Stufe“ = LP/HP und „Bündel“ = HT/LT. Nach `CLAUDE.md`
   heißt HT/LT „Stufe“. Vorschlag: „Aufladestufe (LP/HP)“ und „Kühlerstufe (HT/LT)“; „Bündel“
   steht in Z. 179, 180, 185, 204, 207, 220, 249, 485, 519, 551–554, 557, 733, 907.
@@ -130,7 +164,9 @@ Zeilenangaben beziehen sich auf diese Kopie. Stichpunkt-Zuarbeit, kein Fließtex
 ## Teil B2 — fehlende Grundlagenbausteine als Stichpunktgerüst
 
 Je Baustein ein Block im Stil `% COPILOT-STICHPUNKTE`, direkt in LaTeX einfügbar. Keys, die noch
-nicht in der Bib stehen, sind mit `% neu:` markiert und unten unter „BibTeX-Entwürfe B2“ aufgeführt.
+nicht in der Bib stehen, sind mit `% neu:` markiert. Einträge unter „BibTeX-Entwürfe B2“; Piroddi,
+Farina und Somalwar stammen aus Auftrag A, `pannocchiaOffsetfreeTrackingMPC2015` steht in den
+BibTeX-Entwürfen von Auftrag D.
 Gleichungen sind eigene Standardherleitungen (sympy-geprüft, wo angegeben); die Anker belegen die
 Methode, nicht die konkrete Formulierung.
 
@@ -158,8 +194,12 @@ Methode, nicht die konkrete Formulierung.
   \item Pol der diskreten Form $z=e^{-\lambda\Delta t}$; Rückrechnung auf die Zeitkonstante
     $\tau=1/\lambda=-\Delta t/\ln z$. Ein identifizierter Koeffizient nahe eins ist deshalb
     kein Mangel, sondern Folge von $\Delta t\ll\tau$.
-  \item Map-Form von \sindyc{} und \edmdc{} schätzt direkt $e^{-\lambda\Delta t}$ bzw.
-    $1-\lambda\Delta t$ als Koeffizienten; bei geändertem Takt neu schätzen oder umrechnen.
+  \item Map-Form von \sindyc{} und \edmdc{} schätzt den diskreten Koeffizienten $a$ (bei
+    konstantem $\lambda$ und ZOH $a=e^{-\lambda\Delta t}$). Exakte Rückrechnung
+    $\lambda=-\ln a/\Delta t$; die Euler-Lesart $\lambda\approx(1-a)/\Delta t$ (bzw. der
+    Koeffizient in $\mathbf x_{k+1}=\mathbf x_k+\Delta t\,\boldsymbol\Theta\boldsymbol\Xi$)
+    unterschätzt $\lambda$ um den Faktor $\approx1-\lambda\Delta t/2$. Bei geändertem Takt neu
+    schätzen oder über $\ln a$ umrechnen.
   \item Hängt $\lambda$ von $\mrel$ ab, ist \eqref{eq.grundlagen.zoh} nichtlinear in $\mrel$,
     die Euler-Form \eqref{eq.grundlagen.euler} affin. Ein Bibliotheksterm $\mrel\,\Tout$ entspricht
     damit der Euler-Näherung; Abweichung klein, solange $\lambda\Delta t\ll1$.
@@ -168,9 +208,11 @@ Methode, nicht die konkrete Formulierung.
   \item Takt im Verhältnis zur Prozessdynamik und zum Reglertakt ($500\,$ms,
     Abschnitt~\ref{ChATCo}) wählen; Faustregel zur Abtastzeit aus
     \cite{astromComputerControlledSystemsTheory1997} mit Stelle belegen.
+  % neu: astromComputerControlledSystemsTheory1997, franklinDigitalControlDynamic1998
   \item Anker: \cite{astromComputerControlledSystemsTheory1997} (Abtastung mit Halteglied,
     Kap.~2, Abschnittsname nur aus Suchzusammenfassung),
     \cite{franklinDigitalControlDynamic1998} (Euler gegenüber Halteglied-Äquivalent).
+    % franklinDigitalControlDynamic1998: Stelle offen
     \cite{kaiserSparseIdentificationNonlinear2018} verwendet laut Autoren-Code ein
     kontinuierliches \sindyc-Modell mit Runge-Kutta-Schritt in einem nichtlinearen MPC (SQP),
     kein QP; als Beleg für die diskrete QP-Form daher nicht geeignet.
@@ -208,13 +250,18 @@ Methode, nicht die konkrete Formulierung.
   \item Totzeit nur bei Richtungswechsel (Umkehrspanne, Abschnitt~\ref{ChATCo}) ist
     hysteresebehaftet und im linearen QP nicht exakt darstellbar; als Modellfehler dem
     Störgrößenbeobachter überlassen oder konservativ über kleinere Ratenschranken abfangen.
+  % neu: astromComputerControlledSystemsTheory1997, normeyricoControlDeadtimeProcesses2007,
+  %      maciejowskiPredictiveControlConstraints2002, camachoModelPredictiveControl2007
   \item Anker: \cite{normeyricoControlDeadtimeProcesses2007} (Kap.~2 Totzeitprozesse,
     Kap.~9 MPC für Totzeitprozesse); \cite{maciejowskiPredictiveControlConstraints2002},
     \cite{camachoModelPredictiveControl2007} (Kap.~7 beschränktes MPC; Stellen für
-    $\Delta u$-Schranken lokal nachschlagen);
-    \cite{rawlingsModelPredictiveControl20202020}.
-  \item Anschluss: In ein lineares QP passen verschobener Eingang mit Zustandserweiterung und die
-    Ratenschranke \eqref{eq.grundlagen.rate}; Padé und Umkehrspanne nicht.
+    $\Delta u$-Schranken lokal nachschlagen).
+    % maciejowskiPredictiveControlConstraints2002: Stelle offen
+  \item Anschluss: In ein lineares QP passen alle drei Totzeitdarstellungen: verschobener
+    Eingang mit Zustandserweiterung (bei ganzzahligem $n_d$ exakt), PT$_n$-Kette und Padé (nach
+    Diskretisierung linear, mehr Zustände, nur genähert; Padé mit Nullstelle rechts, im
+    zeitdiskreten MPC entbehrlich). Die Ratenschranke \eqref{eq.grundlagen.rate} ist linear.
+    Nicht exakt darstellbar ist nur die Totzeit bei Richtungswechsel (Umkehrspanne).
 \end{itemize}
 % COPILOT-STICHPUNKTE END B2-Totzeit-Rate
 ```
@@ -235,26 +282,39 @@ Methode, nicht die konkrete Formulierung.
   \item Mit Gl.~(\ref{eq.grundlagen.mpc}) ergibt sich eine quadratische Zielfunktion in
     $(\Delta\mathbf u,\mathbf s)$ mit positiv definiter Hesse-Matrix für $\lambda>0$, $\mu>0$;
     Stell-, Raten- und weiche Ausgangsschranken sind linear: konvexes QP.
-  \item Bedingung für das QP ist die Affinität im Zustand, nicht nur in der Stellgröße.
-    Produkte Zustand$\times$Zustand oder Stellgröße$\times$Zustand machen die Prädiktion nicht
-    affin in $\mathbf u$ (B1, sympy-Beispiel). Produkte mit exogenen Größen sind zulässig, wenn
-    deren Verlauf über den Horizont vorgegeben oder eingefroren wird (LPV-Form).
-  \item Weiche Schranke: Mit rein quadratischer Strafe $\mu s^2$ wird die Schranke auch dann
-    leicht verletzt, wenn eine zulässige Lösung existiert; ein zusätzlicher linearer Term
+  \item Bedingung für das QP ist die gemeinsame Affinität in Stellgröße und den von ihr
+    beeinflussten Zuständen. Produkte zweier von $\mathbf u$ beeinflusster Größen
+    (Zustand$\times$Zustand, Stellgröße$\times$Zustand) machen die Prädiktion nicht affin in
+    $\mathbf u$ (B1, sympy-Beispiel); Produkte mit exogenen oder von $\mathbf u$ unbeeinflussten
+    Größen sind zulässig, wenn deren Verlauf über den Horizont vorgegeben oder eingefroren wird
+    (LPV-Form).
+  \item Weiche Schranke: Mit rein quadratischer Strafe $\mu s^2$ wird die Schranke verletzt,
+    sobald sie im harten Problem aktiv wäre, obwohl eine zulässige Lösung existiert; ein
+    zusätzlicher linearer Term
     $\mu_1 s$ mit ausreichend großem $\mu_1$ macht die Strafe exakt (\cite{kerriganSoftConstraintsExact2000}; Voraussetzung laut Suchzusammenfassung:
     Strafgewicht über einer unteren Schranke; Zulässigkeitsfragen
     \cite{scokaertFeasibilityIssuesLinear1999}).
   \item Offsetfreiheit: Störmodell $d^{\mathrm{off}}_{k+1}=d^{\mathrm{off}}_k$ am Ausgang,
     $y_k=Cx_k+d^{\mathrm{off}}_k$; Beobachter schätzt $\hat x$ und $\hat d^{\mathrm{off}}$;
     Zielwertberechnung löst die Ruhelage $(x_s,u_s)$ zum Sollwert.
-    Bedingung: Detektierbarkeit des erweiterten Systems, Zahl der Störzustände gleich Zahl der
-    Ausgänge \cite{muskeDisturbanceModelingOffsetfree2002,
-    pannocchiaDisturbanceModelsOffsetfree2003, maederLinearOffsetfreeModel2009}.
+    Bedingungen: erweitertes System detektierbar (beim reinen Ausgangsstörmodell: $(A,C)$
+    detektierbar und $A$ ohne Eigenwert 1), Zahl der Störzustände gleich Zahl der gemessenen
+    Ausgänge, Zielwertberechnung lösbar, geschlossener Kreis stabil, Beschränkungen stationär
+    nicht aktiv \cite{muskeDisturbanceModelingOffsetfree2002,
+    pannocchiaDisturbanceModelsOffsetfree2003, maederLinearOffsetfreeModel2009}
+    (Stellen lokal nachschlagen).
   \item Gemessene Störgrößen ($\TLT$, Last) als Vorsteuerung über ihren Verlauf im Horizont;
-    ohne Prognose konstant fortschreiben (Kommentar ch2 Z.~1111).
+    ohne Prognose konstant fortschreiben. (Greift den Merker ch2 Z.~1111 auf:
+    Störgrößenprädiktion erwähnen.)
+  % neu: kerriganSoftConstraintsExact2000, scokaertFeasibilityIssuesLinear1999,
+  %      maciejowskiPredictiveControlConstraints2002, pannocchiaOffsetfreeTrackingMPC2015
   \item Anker: \cite{rawlingsModelPredictiveControl20202020}; \cite{maciejowskiPredictiveControlConstraints2002};
     \cite{pannocchiaOffsetfreeTrackingMPC2015} (Vergleich offsetfreier Formulierungen:
     Störmodell mit Beobachter, Zustandsstörbeobachter, Geschwindigkeitsform).
+    % rawlingsModelPredictiveControl20202020, maciejowskiPredictiveControlConstraints2002,
+    % pannocchiaOffsetfreeTrackingMPC2015: Stelle offen
+    % pannocchiaOffsetfreeTrackingMPC2015: [nur bibliografisch]; Aufzählung der Formulierungen
+    % nicht aus dem Titel, ungeprüft (S)
   \item Anschluss: Kapitel~\ref{ch.methodik} kann die Modellklassen daran messen, ob sie die
     Affinitätsbedingung erfüllen; \arx{} und \edmdc{} tun es per Konstruktion, \sindyc{} nur mit
     passender Bibliothek.
@@ -290,9 +350,11 @@ Methode, nicht die konkrete Formulierung.
     Arbeitspunktwahl oder LPV-Form angeben.
   \item Konvention: Sekante über ein Hubband oder lokale Steigung, Band und Arbeitspunkt
     nennen (Z.~790--793 in ch2).
+  % neu: khalilNonlinearSystems2002, skogestadMultivariableFeedbackControl2005
   \item Anker: \cite{khalilNonlinearSystems2002} (Ruhelage, Linearisierung; Stelle lokal);
     \cite{skogestadMultivariableFeedbackControl2005} (Modellunsicherheit, Kap.~7 laut
     Suchzusammenfassung); \cite{rawlingsModelPredictiveControl20202020} (Zielwertberechnung).
+    % rawlingsModelPredictiveControl20202020: Stelle offen
   \item Anschluss: Der Ventil-Gain ist eine der vier Bewertungsgrößen der Arbeit;
     Gl.~\eqref{eq.grundlagen.gain.stat} definiert ihn modellklassenübergreifend.
 \end{itemize}
@@ -316,20 +378,36 @@ Methode, nicht die konkrete Formulierung.
     (Gleichungsfehler). $J_{\mathrm{sim}}$ ist nichtlinear in den Parametern und wird iterativ
     minimiert \cite{piroddiIdentificationAlgorithmPolynomial2003,
     farinaIterativeAlgorithmSimulation2010} (Keys aus Auftrag A).
+    % piroddiIdentificationAlgorithmPolynomial2003, farinaIterativeAlgorithmSimulation2010:
+    % [nur bibliografisch]; Aussage durch Titel gedeckt (T)
   \item Konsistenz: Gleichungsfehler passt zu weißem Gleichungsrauschen (ARX-Struktur),
     Simulationsfehler zu Ausgangsrauschen (OE-Struktur)
     \cite{ljungSystemIdentificationTheory1999} (Kapitel lokal nachschlagen).
+  \item Die Konsistenzaussage gilt im offenen Kreis. Bei Daten aus geregeltem Betrieb
+    (Abschnitt~\ref{ChATCo}) ist $u$ mit dem Rauschen korreliert; die direkte Schätzung ist dann
+    nur konsistent, wenn das wahre Störmodell im Modellsatz liegt
+    (Abschnitt~\ref{closed_loop_identifkation}). Simulationsfehler bzw. OE-Struktur mit festem
+    Rauschmodell ergibt dann eine verzerrte Strecke, auch in der Verstärkung.
   \item Träge Strecke, $a\to1$: Schon das Persistenzmodell $\hat y_{k+1|k}=y_k$ hat einen
     kleinen Einschrittfehler. Einschrittgüte daher immer gegen diese Referenz angeben.
   \item Das MPC nutzt $N$-Schritt-Prädiktionen. Maßgeblich ist der Fehler über dem Horizont,
-    $e(h)$ für $h=1,\dots,N$; Mehrschritt-Kriterium als Schätzziel senkt den Bias bei
-    fehlspezifizierter Modellklasse \cite{somalwarLearningImperfectModels2025}.
+    $e(h)$ für $h=1,\dots,N$. Für lineare Systeme mit fehlspezifizierter Modellklasse
+    (Teilbeobachtbarkeit) senken direkt trainierte Mehrschritt-Prädiktoren den Bias gegenüber
+    dem Freilauf eines Einschrittmodells; ein Einschrittmodell mit Mehrschritt-Verlust ist dort
+    nur empirisch untersucht \cite{somalwarLearningImperfectModels2025}.
+    % somalwarLearningImperfectModels2025: arXiv:2504.01766, Preprint; [nur bibliografisch],
+    % Inhalt und Bias-Aussage nur aus Suchzusammenfassung (S); CDC-2025-Fassung nur laut
+    % Suchzusammenfassung, lokal prüfen
   \item Freilauf auf aufgezeichneter Stellgröße aus geregeltem Betrieb ist eine
     Open-Loop-Simulation mit Closed-Loop-Eingang; eine Closed-Loop-Simulation braucht
     zusätzlich den Regler.
+  % neu: piroddiIdentificationAlgorithmPolynomial2003, farinaIterativeAlgorithmSimulation2010,
+  %      somalwarLearningImperfectModels2025, nellesNonlinearSystemIdentification2020,
+  %      ribeiroParallelTrainingConsidered2018
   \item Anker: \cite{ljungSystemIdentificationTheory1999}; \cite{nellesNonlinearSystemIdentification2020} (Kap.~19, Gleichungs- gegenüber
     Ausgangsfehler); \cite{ribeiroParallelTrainingConsidered2018} (serie-parallele gegenüber
     paralleler Schätzung).
+    % ljungSystemIdentificationTheory1999, ribeiroParallelTrainingConsidered2018: Stelle offen
   \item Anschluss: Die Arbeit bewertet offene und geschlossene Kette; pro Modell angeben, welches
     Kriterium für den Fit, welches für die Auswahl und welches für die Bewertung gilt.
 \end{itemize}
@@ -338,13 +416,18 @@ Methode, nicht die konkrete Formulierung.
 
 ### BibTeX-Entwürfe B2
 
-Nur (T)- und (G)-Felder im Eintrag, (S)-Felder als `% ungeprüft:` darüber. Status aller Einträge:
+Herkunft (T/G/S) je Feld ist für die Einträge B2 nicht dokumentiert. Alle Felder gelten bis zum
+Abgleich mit Zotero/Original als ungeprüft; Felder, die schon beim Erstellen als unsicher galten,
+stehen zusätzlich als `% ungeprüft:` über dem Eintrag. Status aller Einträge:
 [nur bibliografisch]. Schon in der Bib: `rawlingsModelPredictiveControl20202020`,
 `muskeDisturbanceModelingOffsetfree2002`, `pannocchiaDisturbanceModelsOffsetfree2003`,
 `maederLinearOffsetfreeModel2009`, `ljungSystemIdentificationTheory1999`,
 `kaiserSparseIdentificationNonlinear2018`. Aus Auftrag A (noch nicht in der Bib):
 `piroddiIdentificationAlgorithmPolynomial2003`, `farinaIterativeAlgorithmSimulation2010`,
-`somalwarLearningImperfectModels2025`.
+`somalwarLearningImperfectModels2025`. Status in dieser Sitzung für alle genannten Keys, auch
+die schon vorhandenen und die aus Auftrag A: [nur bibliografisch];
+`somalwarLearningImperfectModels2025` ist arXiv-Preprint. `pannocchiaOffsetfreeTrackingMPC2015`:
+Eintrag in den BibTeX-Entwürfen von Auftrag D.
 
 ```bibtex
 % ungeprüft: year = {1997}
@@ -398,17 +481,18 @@ Nur (T)- und (G)-Felder im Eintrag, (S)-Felder als `% ungeprüft:` darüber. Sta
   doi       = {10.1007/978-0-85729-398-5}
 }
 
-% ungeprüft: Initialen E. C.; booktitle = {Proc. UKACC International Conference (Control 2000)};
+% ungeprüft: author = {Kerrigan, E. C. and Maciejowski, J. M.} (Nachnamen in Treffer-URL gesehen,
+%            Initialen nur aus Suchzusammenfassung);
+%            booktitle = {Proc. UKACC International Conference (Control 2000)};
 %            address = {Cambridge, UK}; year = {2000}; pages = {2319--2327}; keine DOI gefunden
 @inproceedings{kerriganSoftConstraintsExact2000,
-  author    = {Kerrigan, E. C. and Maciejowski, J. M.},
   title     = {Soft Constraints and Exact Penalty Functions in Model Predictive Control},
   url       = {https://spiral.imperial.ac.uk/entities/publication/b1d59b69-3901-41f5-bb9f-f619319fa9dc}
 }
 
-% ungeprüft: Vorname Rawlings; number = {8}; pages = {1649--1659} (Startseite 1649 aus ADS-Bibcode, T)
+% ungeprüft: Vornamen (Pierre, Rawlings); number = {8}; pages = {1649--1659} (Startseite 1649 aus ADS-Bibcode, T)
 @article{scokaertFeasibilityIssuesLinear1999,
-  author    = {Scokaert, Pierre O. M. and Rawlings, J. B.},
+  author    = {Scokaert, P. O. M. and Rawlings, J. B.},
   title     = {Feasibility issues in linear model predictive control},
   journal   = {AIChE Journal},
   volume    = {45},
@@ -416,12 +500,7 @@ Nur (T)- und (G)-Felder im Eintrag, (S)-Felder als `% ungeprüft:` darüber. Sta
   doi       = {10.1002/aic.690450805}
 }
 
-% ungeprüft: author = {Pannocchia, G.}; booktitle = {2015 European Control Conference (ECC)};
-%            address = {Linz}; year = {2015}; pages = {527--532}; doi = {10.1109/ECC.2015.7330597}
-@inproceedings{pannocchiaOffsetfreeTrackingMPC2015,
-  title     = {Offset-free tracking {MPC}: A tutorial review and comparison of different formulations},
-  url       = {https://ieeexplore.ieee.org/document/7330597/}
-}
+% pannocchiaOffsetfreeTrackingMPC2015: hier nicht übernehmen, Eintrag siehe BibTeX-Entwürfe D (Metadaten G).
 
 @book{khalilNonlinearSystems2002,
   author    = {Khalil, Hassan K.},
@@ -464,32 +543,6 @@ Nur (T)- und (G)-Felder im Eintrag, (S)-Felder als `% ungeprüft:` darüber. Sta
 }
 ```
 
-
----
-
-## Offen / nicht belegt
-
-- Keine Lehrbuchstelle am Original geprüft; das gilt für alle in ch2 zitierten Seiten und
-  Gleichungsnummern des Abschnitts Wärmeübertragung und für alle Kapitelangaben in B2.
-- B2-Anker nur bibliografisch; Kapitelnamen bei Åström & Wittenmark, Franklin u. a., Skogestad &
-  Postlethwaite nur aus Suchzusammenfassung. Lokal nachschlagen: Euler/Näherung (Åström),
-  Padé und verschobener Eingang (Normey-Rico), $\Delta u$-Schranken und weiche Schranken
-  (Maciejowski, Camacho Kap. 7), Linearisierung (Khalil), Verstärkungsunsicherheit (Skogestad),
-  Kapitel zu Prädiktions- und Simulationsfehler (Ljung).
-- Kaiser u. a. 2018: Befund „kontinuierliches Modell, nichtlineares MPC mit SQP“ stammt aus dem
-  Autoren-Code (GitHub eurika-kaiser/SINDY-MPC), nicht aus dem Papertext.
-- Kein belastbarer Primäranker für „Gain-Fehler identifizierter Modelle verschlechtert MPC“.
-  Kandidaten nur mit (S)-Metadaten: Yousefi u. a. 2015 (Control Eng. Pract. 43, 59–68,
-  Model-Plant-Mismatch an Papiermaschinen), Wang, Hägglund, Song 2012 (Ind. Eng. Chem. Res.,
-  DOI 10.1021/ie300834y aus URL). Ein Lehrbuchanker zur integralen Regelbarkeit bei
-  Gain-Fehlern (z. B. Morari & Zafiriou) wurde nicht gesucht.
-- Ventilschaltung (Verteilen/Mischen) und Messort von $\THT$, $\TLT$: nur aus der Anlage
-  klärbar, nicht aus der Literatur.
-- Faustregel zur Abtastzeit: Stelle bei Åström & Wittenmark nicht gesehen.
-- Gleichungslabels in B2 (`eq.grundlagen.zoh` usw.) sind Vorschläge; auf Kollision mit
-  bestehenden Labels in Kap. 5 prüfen.
-
-
 ---
 
 ## Anhang: sympy-Skript (B1)
@@ -524,6 +577,11 @@ dH = Tin - THT
 eb21 = Tin - PH*dH - P3*((THT - TLT) + c*dH)
 exact = eb21.subs({PH: eHT, P3: eLT, c: 1 - eHT})
 check("EB21-Form exakt mit PH=eHT, P3=eLT, c=1-eHT", Tstat - exact)
+# Koeffizientenvergleich nach Tin, THT, TLT: alle (PH, P3) bei beliebigem c
+diff3 = sp.expand(Tstat - eb21)
+sol3 = sp.solve([diff3.coeff(vv) for vv in (Tin, THT, TLT)], [PH, P3], dict=True)
+print("EB21 Koeffizientenvergleich:", sol3)
+check("PH = eHT + eLT(1-eHT-c)", sol3[0][PH] - (eHT + eLT*(1 - eHT - c)))
 
 # 4) Effektivität / Temperaturänderungsgrad: eps = (Cmin/C_L)*eps_Q
 Q, Cmin, CL = sp.symbols('Qdot C_min C_L', positive=True)
@@ -627,5 +685,40 @@ print("K = b/(1-a); relative Empfindlichkeit (dK/K)/(da/a) =", sp.simplify(sp.di
 #     (keine Rechnung nötig; nur Hinweis, dass bei a -> 1 der Einschrittfehler klein bleibt)
 ```
 
-Ausgabe: alle Prüfungen „OK“; Mehrschritt-Beispiel: $\partial^2x_2/\partial u_0^2=-2\theta$ (nicht affin), bilinear $\theta^2(x_0-T_{LT})$, LPV exogen 0; $K=b/(1-a)$ mit relativer Empfindlichkeit $a/(1-a)$.
+Ausgabe: alle Prüfungen „OK“; EB21-Koeffizientenvergleich: $P_3=\varepsilon_{LT}$, $P_H=\varepsilon_{HT}+\varepsilon_{LT}(1-\varepsilon_{HT}-c)$; Mehrschritt-Beispiel: $\partial^2x_2/\partial u_0^2=-2\theta$ (nicht affin), bilinear $\theta^2(x_0-T_{LT})$, LPV exogen 0; $K=b/(1-a)$ mit relativer Empfindlichkeit $a/(1-a)$.
 
+---
+
+## Offen / nicht belegt
+
+- Keine Lehrbuchstelle am Original geprüft; das gilt für alle in ch2 zitierten Seiten und
+  Gleichungsnummern des Abschnitts Wärmeübertragung und für alle Kapitelangaben in B2.
+- B2-Anker nur bibliografisch; Kapitelnamen bei Åström & Wittenmark, Franklin u. a., Skogestad &
+  Postlethwaite nur aus Suchzusammenfassung. Lokal nachschlagen: Euler/Näherung (Åström),
+  Padé und verschobener Eingang (Normey-Rico), $\Delta u$-Schranken und weiche Schranken
+  (Maciejowski, Camacho Kap. 7), Linearisierung (Khalil), Verstärkungsunsicherheit (Skogestad),
+  Kapitel zu Prädiktions- und Simulationsfehler (Ljung), Bedingungen der Offsetfreiheit
+  (Muske 2002, Pannocchia 2003, Maeder 2009).
+- Anker ohne Stelle: B2.1 Franklin; B2.2 Maciejowski; B2.3 alle drei (Rawlings, Maciejowski,
+  Pannocchia 2015); B2.4 Rawlings; B2.5 Ljung (Kapitel), Ribeiro (Abschnitt).
+- Somalwar u. a. 2025: CDC-2025-Fassung nur laut Suchzusammenfassung; Preprint-Vermerk lokal
+  prüfen.
+- BibTeX B2: Herkunft der Felder (ISBN, DOI, Reihe, Ort, Vornamen) nicht je Feld belegt.
+- Kaiser u. a. 2018: Befund „kontinuierliches Modell, nichtlineares MPC mit SQP“ stammt aus dem
+  Autoren-Code (GitHub eurika-kaiser/SINDY-MPC), nicht aus dem Papertext.
+- Kein belastbarer Primäranker für „Gain-Fehler identifizierter Modelle verschlechtert MPC“.
+  Kandidaten nur mit (S)-Metadaten: Yousefi u. a. 2015 (Control Eng. Pract. 43, 59–68,
+  Model-Plant-Mismatch an Papiermaschinen), Wang, Hägglund, Song 2012 (Ind. Eng. Chem. Res.,
+  DOI 10.1021/ie300834y aus URL). Ein Lehrbuchanker zur integralen Regelbarkeit bei
+  Gain-Fehlern (z. B. Morari & Zafiriou) wurde nicht gesucht.
+- Ventilschaltung (Stufe mit $\TLT$ oder mit Mischtemperatur angeströmt, vgl. ch2 Z. 263–265)
+  und Messort von $\THT$, $\TLT$: nur aus der Anlage klärbar, nicht aus der Literatur.
+- Hydraulische Einordnung unter „Ventilschaltung“ (Umlenk- bzw. Verteilschaltung mit
+  Eintritt $\TLT$, Beimisch- oder Einspritzschaltung mit Mischtemperatur): Fachwissen ohne
+  geprüfte Quelle; Webseiten aus der Suche nicht übernommen. Lehrbuchstelle zur Anlagenhydraulik
+  lokal ergänzen oder Aussage auf die Anlagendokumentation stützen.
+- Stufenreihenfolge HT vor LT und Sensorlage: laut ch2 Z. 557–558 nicht verifiziert; nur aus
+  Anlage oder Zeichnung klärbar.
+- Faustregel zur Abtastzeit: Stelle bei Åström & Wittenmark nicht gesehen.
+- Gleichungslabels in B2 (`eq.grundlagen.zoh` usw.) sind Vorschläge; auf Kollision mit
+  bestehenden Labels in Kap. 5 prüfen.
